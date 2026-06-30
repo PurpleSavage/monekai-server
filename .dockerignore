@@ -1,0 +1,25 @@
+
+.git
+.gitignore
+
+
+# Es mejor inyectarlas vía Docker Compose que copiarlas dentro de la imagen
+.env
+
+
+README.md
+docs/
+
+
+main
+bin/
+
+
+postgres_data/
+
+
+.vscode
+.idea
+
+
+docs/

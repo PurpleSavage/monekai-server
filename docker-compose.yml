@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: moneka_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+ 
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: moneka_app
+    restart: on-failure
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    environment:
+      - HOST=db
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=${DB_PORT}
+      - DB_SSLMODE=${DB_SSLMODE}
+      - JWT_SECRET=${JWT_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - REPLICATE_KEY=${REPLICATE_KEY}
+      - REPLICATE_WEBHOOK_SECRET=${REPLICATE_WEBHOOK_SECRET}
+      - BACKED_SERVER_URL=${BACKED_SERVER_URL}
+      - R2_ACCOUNT_ID=${R2_ACCOUNT_ID}
+      - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
+      - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
+      - R2_PUBLIC_URL=${R2_PUBLIC_URL}
+      - ENVIRONMENT=${ENVIRONMENT}
+      - BACKEND_SERVER_URL=${BACKEND_SERVER_URL}
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: moneka_ngrok
+    restart: unless-stopped
+    command:
+      - "http"
+      - "app:8080" # <-- Apunta al servicio de Go (app) y su puerto interno
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN} # <-- Lo manejamos desde tu archivo .env
+    ports:
+      - "4040:4040" # Panel web local para interceptar, inspeccionar y repetir webhooks
+    depends_on:
+      - app
+
+volumes:
+  postgres_data:
