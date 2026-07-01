@@ -1,4 +1,4 @@
-package commonoutports
+package commonoutadapters
 
 import (
 	"errors"

@@ -4,10 +4,12 @@ import (
 	"strings"
 
 	samplerenums "github.com/PurpleSavage/monekai-server/modules/sampler/domain/enums"
+	authvalueobjects "github.com/PurpleSavage/monekai-server/modules/shared/auth/domain/valueobjects"
 	commondomainerrors "github.com/PurpleSavage/monekai-server/modules/shared/common/domain/errors"
+	"github.com/google/uuid"
 )
 type PayloadGenerateSongVO struct {
-	UserId	string
+	UserId	uuid.UUID
 	// Internal webhook used by Replicate to notify
 	// the backend when the generation finishes.
 	WebhookUrl string
@@ -68,6 +70,10 @@ func CreatePayloadGenerateSongVO(
 	userId string,
 ) (*PayloadGenerateSongVO, error) {
 
+	userUUID, err := authvalueobjects.NewUUIDVO(userId)
+	if err != nil {
+		return nil, err
+	}
 
 
 	// -------------------------
@@ -157,7 +163,7 @@ func CreatePayloadGenerateSongVO(
 	// -------------------------
 
 	vo := &PayloadGenerateSongVO{
-		UserId: userId,
+		UserId: userUUID.Value(),
 
 
 		WebhookUrl: webhookUrl,
