@@ -7,8 +7,11 @@ import (
 
 	"github.com/PurpleSavage/monekai-server/cmd/scripts"
 	connection "github.com/PurpleSavage/monekai-server/configurations/persistenceconnections"
+	"github.com/PurpleSavage/monekai-server/modules/sampler"
 	"github.com/PurpleSavage/monekai-server/modules/shared/auth"
 	"github.com/PurpleSavage/monekai-server/modules/shared/common/config"
+	commoninadapters "github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/in-adapters"
+	"github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/validators"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/cors"
@@ -54,11 +57,24 @@ func main() {
 	}
 	scripts.RunMigrations(migrateDSN)
 	// ─── 1. INSTANCIAS GLOBALES COMPARTIDAS ───
-    //dtoValidator := sharedvalidators.NewDTOValidator()
+    dtoValidator := validators.NewDTOValidator()
+    bucketObserver:= commoninadapters.NewObserverBucket()
+
+
+    //root routes
 	r.Mount(
 		"/auth",
 		auth.AuthBootstrap(
 			db,
+		),
+	)
+
+	r.Mount(
+		"/audio",
+		sampler.SamplerBootstrap(
+			db,
+			bucketObserver,
+			dtoValidator,
 		),
 	)
 	

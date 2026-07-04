@@ -11,22 +11,22 @@ import (
 )
 
 
-type GenerateSongUseCase struct{
+type GenerateSampleUseCase struct{
 	songGeneratorService samplerports.SongGeneratorPort
 	audioRepository samplerports.SamplerPersistencePort
 }
 
-func NewGeneratorSongUseCase(
+func NewGeneratorSampleUseCase(
 	songGeneratorService samplerports.SongGeneratorPort,
 	audioRepository samplerports.SamplerPersistencePort,
-)*GenerateSongUseCase{
-	return  &GenerateSongUseCase{
+)*GenerateSampleUseCase{
+	return  &GenerateSampleUseCase{
 		songGeneratorService:songGeneratorService,
 		audioRepository: audioRepository,
 	}
 }
 
-func (g *GenerateSongUseCase) Execute(
+func (g *GenerateSampleUseCase) Execute(
 	dto samplerequestsdto.GenerateSampleDTO, 
 	userId string,
 )(*samplerentities.SongGeneratorResponse, error){

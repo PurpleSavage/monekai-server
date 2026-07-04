@@ -10,3 +10,4 @@ type SampleGenerationInput struct {
 	TopP                      float32 `json:"top_p"`
 	Temperature               float32 `json:"temperature"`
 }
+
