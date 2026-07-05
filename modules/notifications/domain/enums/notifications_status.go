@@ -1,4 +1,4 @@
-package samplerenums
+package notificationsenums
 type NotificationStatus string
 
 const (

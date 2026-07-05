@@ -1,4 +1,4 @@
 package samplerequestsdto
-type ShareSampleDTO struct {
+type ShareSampleRequestDTO struct {
 	SampleID string `json:"sampleId" validate:"required"`
 }

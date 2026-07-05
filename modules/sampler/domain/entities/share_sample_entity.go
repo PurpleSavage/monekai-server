@@ -5,7 +5,7 @@ import "github.com/google/uuid"
 type ShareSampleEntity struct {
 	Id              uuid.UUID
 	SampleId        *uuid.UUID
-	SampleVersionId *string
+	SampleVersionId *uuid.UUID
 	UserId          string
 	Likes           int
 	Downloads       int

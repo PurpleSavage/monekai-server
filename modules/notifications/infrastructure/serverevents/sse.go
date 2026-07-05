@@ -11,8 +11,7 @@ import (
 )
 
 type AudioSSEHandler struct {
-	sseManager     *SSEManag
-	er
+	sseManager     *SSEManager	
 	authMiddleware *authmiddlewares.AuthMiddleware
 }
 

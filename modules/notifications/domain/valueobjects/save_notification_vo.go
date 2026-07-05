@@ -1,8 +1,9 @@
-package samplervalueobjects
+package notificationsvalueobjects
 
 import (
 	"strings"
-	audioenums "github.com/PurpleSavage/monekai-server/modules/sampler/domain/enums"
+
+	notificationsenums "github.com/PurpleSavage/monekai-server/modules/notifications/domain/enums"
 	authvalueobjects "github.com/PurpleSavage/monekai-server/modules/shared/auth/domain/valueobjects"
 	commondomainerrors "github.com/PurpleSavage/monekai-server/modules/shared/common/domain/errors"
 	"github.com/google/uuid"
@@ -10,7 +11,7 @@ import (
 
 type SaveNotificationVO struct {
 	UserID      uuid.UUID 
-	Type        audioenums.TypeNotification
+	Type        notificationsenums.TypeNotification
 	Title       string
 	Message     string
 	ReferenceID uuid.UUID
@@ -32,16 +33,16 @@ func CreateSaveNotificationVO(
 	}
 
 	// 2. Validar y transformar el Enum TypeNotification
-	var finalType audioenums.TypeNotification
-	switch audioenums.TypeNotification(strings.ToLower(notificationType)) {
-		case audioenums.ReplicateError:
-			finalType = audioenums.ReplicateError
-		case audioenums.ReplicateSuccess:
-			finalType = audioenums.ReplicateSuccess
-		case audioenums.Payment:
-			finalType = audioenums.Payment
-		case audioenums.Info:
-			finalType = audioenums.Info
+	var finalType notificationsenums.TypeNotification
+	switch notificationsenums.TypeNotification(strings.ToLower(notificationType)) {
+		case notificationsenums.ReplicateError:
+			finalType = notificationsenums.ReplicateError
+			case notificationsenums.ReplicateSuccess:
+			finalType = notificationsenums.ReplicateSuccess
+			case notificationsenums.Payment:
+			finalType = notificationsenums.Payment
+			case notificationsenums.Info:
+			finalType = notificationsenums.Info
 		default:
 			return nil, commondomainerrors.NewValidationError(
 				"type",
