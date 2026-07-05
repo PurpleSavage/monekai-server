@@ -2,6 +2,7 @@ package models
 
 import (
 	"time"
+	notificationsenums "github.com/PurpleSavage/monekai-server/modules/notifications/domain/enums"
 	samplerenums "github.com/PurpleSavage/monekai-server/modules/sampler/domain/enums"
 	"github.com/google/uuid"
 	"gorm.io/datatypes"
@@ -67,10 +68,10 @@ type SharedSample struct {
 type Notification struct {
 	ID          uuid.UUID                   `gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
 	UserID      uuid.UUID                   `gorm:"type:uuid;not null;index"`
-	Type        samplerenums.TypeNotification `gorm:"size:50;not null;check:type_notification IN ('replicate_error', 'replicate_success', 'payment', 'info')"` 
+	Type        notificationsenums.TypeNotification `gorm:"size:50;not null;check:type_notification IN ('replicate_error', 'replicate_success', 'payment', 'info')"` 
 	Title       string                      `gorm:"size:255"`
 	Message     string                      `gorm:"type:text"`
-	Status      samplerenums.NotificationStatus           `gorm:"type:varchar(20);default:'unread';check:status IN ('unread', 'read')"` 
+	Status      notificationsenums.NotificationStatus           `gorm:"type:varchar(20);default:'unread';check:status IN ('unread', 'read')"` 
 	ReferenceID uuid.UUID                   `gorm:"type:uuid"` // ID del sample relacionado
 	CreatedAt   time.Time                   `gorm:"autoUpdateTime"`
 }
