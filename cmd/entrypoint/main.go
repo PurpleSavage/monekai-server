@@ -4,10 +4,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
 	"github.com/PurpleSavage/monekai-server/cmd/scripts"
 	connection "github.com/PurpleSavage/monekai-server/configurations/persistenceconnections"
+	"github.com/PurpleSavage/monekai-server/modules/notifications"
 	"github.com/PurpleSavage/monekai-server/modules/sampler"
 	"github.com/PurpleSavage/monekai-server/modules/shared/auth"
+	authinadapters "github.com/PurpleSavage/monekai-server/modules/shared/auth/infrastructure/in-adapters"
+	authmiddlewares "github.com/PurpleSavage/monekai-server/modules/shared/auth/infrastructure/middlewares"
 	"github.com/PurpleSavage/monekai-server/modules/shared/common/config"
 	commoninadapters "github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/in-adapters"
 	"github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/validators"
@@ -56,9 +60,10 @@ func main() {
 	}
 	scripts.RunMigrations(migrateDSN)
 	// ─── 1. INSTANCIAS GLOBALES COMPARTIDAS ───
+	jwt := authinadapters.NewJwtAdapterService()
     dtoValidator := validators.NewDTOValidator()
     bucketObserver:= commoninadapters.NewObserverBucket()
-
+    authmiddleware:=authmiddlewares.NewAuthMiddleware(jwt)
 
     //root routes
 	r.Mount(
@@ -67,7 +72,14 @@ func main() {
 			db,
 		),
 	)
-
+	r.Mount(
+		"/notifications",
+		notifications.NotificationsBootstrap(
+			db,
+			bucketObserver,
+			dtoValidator,
+		),
+	)
 	r.Mount(
 		"/audio",
 		sampler.SamplerBootstrap(

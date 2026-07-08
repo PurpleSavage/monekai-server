@@ -5,5 +5,5 @@ import commonentities "github.com/PurpleSavage/monekai-server/modules/shared/com
 type ObserverBucketPort interface {
 	AddObserver(observer Observer, eventname string)
 	RemoveObserver(observer Observer, eventname string)
-	NotifyObservers(event commonentities.Event[any], eventname string)
+	NotifyObservers(event commonentities.Event, eventname string)
 }

@@ -2,6 +2,7 @@ package notificationsinadapters
 
 import (
 	models "github.com/PurpleSavage/monekai-server/configurations/persistence"
+	notificationssreponsesdtos "github.com/PurpleSavage/monekai-server/modules/notifications/application/dtos/responses"
 	notificationsports "github.com/PurpleSavage/monekai-server/modules/notifications/application/ports"
 	notificationsentities "github.com/PurpleSavage/monekai-server/modules/notifications/domain/entities"
 	notificationsvalueobjects "github.com/PurpleSavage/monekai-server/modules/notifications/domain/valueobjects"
@@ -57,6 +58,26 @@ func (r *NotificationsRepository) SaveNotification(
 	return savedNotificationResponse, nil
 }
 
-
-
+func (r *NotificationsRepository) ListNotifications(
+	userID string,
+	limit int,
+	page int,
+) ([]notificationssreponsesdtos.ItemNotificationDTO, error) {
+	var notifications []models.Notification
+	err := r.db.Where("user_id = ?", userID).
+		Order("created_at DESC").
+		Limit(limit).
+		Offset((page - 1) * limit).
+		Find(&notifications).Error
+	if err != nil {
+		return nil, globalerrors.NewAppError(
+			500,
+			"Failed to list notifications",
+			"",
+			nil,
+		)
+	}
+	
+	return notificationsinfrastructuremappers.ToListOfItmesNotification(notifications), nil
+}
 

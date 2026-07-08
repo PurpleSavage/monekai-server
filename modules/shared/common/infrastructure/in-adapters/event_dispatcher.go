@@ -11,8 +11,8 @@ type  ObserverBucket struct{
 func NewObserverBucket() commonports.ObserverBucketPort{
 	return &ObserverBucket{
 		events: map[string][]commonports.Observer{
-			"replicate_events": []commonports.Observer{},
-			"payment:events": []commonports.Observer{},
+			"sample_event": []commonports.Observer{},
+			"payment_event": []commonports.Observer{},
 		},
 	}
 }
@@ -30,7 +30,7 @@ func (eb *ObserverBucket) RemoveObserver(observer commonports.Observer, eventnam
 	}
 }
 
-func (eb *ObserverBucket) NotifyObservers(event commonentities.Event[any], eventname string){
+func (eb *ObserverBucket) NotifyObservers(event commonentities.Event, eventname string){
 	for _, observer := range eb.events[eventname] {
 		observer.ReceiveEvent(event)
 	}
