@@ -5,7 +5,6 @@ import (
 	samplercontroller "github.com/PurpleSavage/monekai-server/modules/sampler/infrastructure/controllers"
 	samplermiddlewares "github.com/PurpleSavage/monekai-server/modules/sampler/infrastructure/middlewares"
 	sampleroutadapters "github.com/PurpleSavage/monekai-server/modules/sampler/infrastructure/out-adapters"
-	authinadapters "github.com/PurpleSavage/monekai-server/modules/shared/auth/infrastructure/in-adapters"
 	authmiddlewares "github.com/PurpleSavage/monekai-server/modules/shared/auth/infrastructure/middlewares"
 	commonports "github.com/PurpleSavage/monekai-server/modules/shared/common/application/ports"
 	commonmiddlewares "github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/middlewares"
@@ -18,12 +17,12 @@ func SamplerBootstrap(
 	db *gorm.DB,
 	ob commonports.ObserverBucketPort,
 	v *validators.DTOValidator,
+ 	authmiddleware *authmiddlewares.AuthMiddleware,
 ) chi.Router{
 
 	//adapterts
 	storageService:=commonoutadapters.NewCloudFlareAdapterService()
 	songService,_:=sampleroutadapters.NewReplicateAdapterService()
-	jwt := authinadapters.NewJwtAdapterService()
 	samplerRepo:=sampleroutadapters.NewSamplerrepository(db)
 	checkerCreditsService:= commonoutadapters.NewCheckerCreditsAdapter(db)
 
@@ -36,14 +35,13 @@ func SamplerBootstrap(
 
 	// middlewaress
 	// middlewares 
-	authMiddleware := authmiddlewares.NewAuthMiddleware(jwt)
 	replicateMiddleware := samplermiddlewares.NewReplicateMiddlewareWebhook()
 	creditsMiddleware := commonmiddlewares.NewCheckCreditsMiddleware(checkerCreditsService)
 
 	
 	controller := samplercontroller.NewSamplerController(
 		creditsMiddleware,
-		authMiddleware,
+		authmiddleware,
 		generateSampleUC,
 		v,
 		replicateMiddleware,

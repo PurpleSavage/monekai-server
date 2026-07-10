@@ -4,6 +4,7 @@ import (
 	notificationsusecases "github.com/PurpleSavage/monekai-server/modules/notifications/application/usecases"
 	notificationscontroller "github.com/PurpleSavage/monekai-server/modules/notifications/infrastructure/controller"
 	notificationsinadapters "github.com/PurpleSavage/monekai-server/modules/notifications/infrastructure/in-adapters"
+	notificationsevents "github.com/PurpleSavage/monekai-server/modules/notifications/infrastructure/serverevents"
 	authmiddlewares "github.com/PurpleSavage/monekai-server/modules/shared/auth/infrastructure/middlewares"
 	commonports "github.com/PurpleSavage/monekai-server/modules/shared/common/application/ports"
 	"github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/validators"
@@ -16,6 +17,7 @@ func NotificationsBootstrap(
 	ob commonports.ObserverBucketPort,
 	v *validators.DTOValidator,
 	am *authmiddlewares.AuthMiddleware,
+	sseManager *notificationsevents.SSEManager,
 ) chi.Router{
 	
 	//adapters 
@@ -24,9 +26,12 @@ func NotificationsBootstrap(
 	//usecases
 	saveNotificationUC := notificationsusecases.NewSaveNotificationUseCase(notificationsRepo)
 	listNotificationsUC := notificationsusecases.NewListNotificationsUseCase(notificationsRepo)
-	
+
 	//adapters -depent - uc
-	notificationsObserver:= notificationsinadapters.NewObserverNotificationSampleEvent(saveNotificationUC)
+	notificationsObserver:= notificationsinadapters.NewObserverNotificationSampleEvent(
+		saveNotificationUC,
+		sseManager,
+	)
 	ob.AddObserver(notificationsObserver, "sample_event")
 
 
@@ -35,6 +40,7 @@ func NotificationsBootstrap(
 		am,
 		v,
 		listNotificationsUC,
+		sseManager,
 	)
 	return  notificationscontroller.NotificationsMaproutes(controller)
 }

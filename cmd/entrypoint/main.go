@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-
 	"github.com/PurpleSavage/monekai-server/cmd/scripts"
 	connection "github.com/PurpleSavage/monekai-server/configurations/persistenceconnections"
 	"github.com/PurpleSavage/monekai-server/modules/notifications"
+	notificationsevents "github.com/PurpleSavage/monekai-server/modules/notifications/infrastructure/serverevents"
 	"github.com/PurpleSavage/monekai-server/modules/sampler"
 	"github.com/PurpleSavage/monekai-server/modules/shared/auth"
 	authinadapters "github.com/PurpleSavage/monekai-server/modules/shared/auth/infrastructure/in-adapters"
@@ -65,6 +65,12 @@ func main() {
     bucketObserver:= commoninadapters.NewObserverBucket()
     authmiddleware:=authmiddlewares.NewAuthMiddleware(jwt)
 
+    //sse
+    sseManager := notificationsevents.NewSSEManager()
+	audioSSEHandler := notificationsevents.NewAudioSSEHandler(sseManager,authmiddleware)
+
+    //root sse
+    notificationsevents.MapSSERoutes(r,audioSSEHandler)
     //root routes
 	r.Mount(
 		"/auth",
@@ -78,6 +84,8 @@ func main() {
 			db,
 			bucketObserver,
 			dtoValidator,
+			authmiddleware,
+			sseManager,
 		),
 	)
 	r.Mount(
@@ -86,6 +94,7 @@ func main() {
 			db,
 			bucketObserver,
 			dtoValidator,
+			authmiddleware,
 		),
 	)
 	
