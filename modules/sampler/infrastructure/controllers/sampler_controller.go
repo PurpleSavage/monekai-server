@@ -16,6 +16,7 @@ import (
 	authmiddlewares "github.com/PurpleSavage/monekai-server/modules/shared/auth/infrastructure/middlewares"
 	commonresponsesdtos "github.com/PurpleSavage/monekai-server/modules/shared/common/application/dtos/responses"
 	commonports "github.com/PurpleSavage/monekai-server/modules/shared/common/application/ports"
+	commonentities "github.com/PurpleSavage/monekai-server/modules/shared/common/domain/entities"
 	globalerrors "github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/errors"
 	commoninfrastructuremappers "github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/mappers"
 	commonmiddlewares "github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/middlewares"
@@ -101,20 +102,20 @@ func (h *SamplerController) CreateSong(w http.ResponseWriter, r *http.Request){
 }
 
 
-
-
-func (h *SamplerController) ReceiveWebhook(w http.ResponseWriter, r *http.Request){
+func (h *SamplerController) ReceiveWebhook(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+
 	var payload samplerequestsdto.SongWebhookResponse
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		log.Printf("DECODE ERROR: %v", err)
 		http.Error(w, "Invalid JSON body", http.StatusBadRequest)
 		return
-	} 
+	}
 	defer r.Body.Close()
+
 	if payload.Status != string(samplerenums.Succeeded) {
 		w.WriteHeader(http.StatusOK)
 		return
@@ -123,10 +124,63 @@ func (h *SamplerController) ReceiveWebhook(w http.ResponseWriter, r *http.Reques
 	// ==========================================
 	// CASO: REPLICATE DEVOLVIÓ UN ERROR
 	// ==========================================
-	
-	
-}
+	if payload.Error != nil && *payload.Error != "" {
+		sample, userId, err := h.findSampleByPredictionUseCase.Execute(payload.ID)
+		if err != nil {
+			commoninfrastructuremappers.RespondWithError(w, err)
+			return
+		}
 
+		data := samplerequestsdto.DataSampleNotify{
+			UserID:   userId,
+			SampleID: sample.Id.String(),
+			Data:     nil,
+		}
+		event := commonentities.Event{
+			Name: commonentities.EventSampleError,
+			Data: data,
+		}
+		h.observerBucket.NotifyObservers(event, "sample_event")
+
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	// ==========================================
+	// CASO: TODO SALIÓ BIEN (ÉXITO)
+	// ==========================================
+	sampleResponseVo, err := h.updateUrlSampleGeneratedUseCase.Execute(payload)
+	if err != nil {
+		log.Printf("ERROR EXECUTING USE CASE: %v", err)
+		commoninfrastructuremappers.RespondWithError(w, err)
+		return
+	}
+
+	dto := samplerresponsessdtos.SampleResponseDTO{
+		Id:           sampleResponseVo.Sample.Id.String(),
+		SampleName:   sampleResponseVo.Sample.SampleName,
+		Prompt:       sampleResponseVo.Sample.Prompt,
+		AudioUrl:     sampleResponseVo.Sample.AudioUrl,
+		Duration:     sampleResponseVo.Sample.Duration,
+		OutputFormat: string(sampleResponseVo.Sample.OutputFormat),
+		ModelVersion: string(sampleResponseVo.Sample.ModelVersion),
+		Status:       string(sampleResponseVo.Sample.Status),
+		CreatedAt:    sampleResponseVo.Sample.CreatedAt,
+	}
+
+	data := samplerequestsdto.DataSampleNotify{
+		UserID:   sampleResponseVo.UserData.ID.String(),
+		SampleID: sampleResponseVo.Sample.Id.String(),
+		Data:     &dto,
+	}
+	event := commonentities.Event{
+		Name: commonentities.EventSampleReady,
+		Data: data,
+	}
+	h.observerBucket.NotifyObservers(event, "sample_event")
+
+	w.WriteHeader(http.StatusOK)
+}
 
 
 

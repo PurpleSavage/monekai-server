@@ -18,6 +18,7 @@ func SamplerBootstrap(
 	ob commonports.ObserverBucketPort,
 	v *validators.DTOValidator,
  	authmiddleware *authmiddlewares.AuthMiddleware,
+  
 ) chi.Router{
 
 	//adapterts
