@@ -73,25 +73,24 @@ func (r *NotificationsRepository) ListNotifications(
 }
 
 func (r *NotificationsRepository) MarkAllNotificationsAsRead(
+	userID string,
 	notificationIDs []uuid.UUID,
 ) ([]notificationssreponsesdtos.NotificationMarkResponseDTO, error) {
 	if len(notificationIDs) == 0 {
 		return []notificationssreponsesdtos.NotificationMarkResponseDTO{}, nil
 	}
-	
+
 	var updatedNotifications []models.Notification
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-		err := tx.Clauses(clause.Returning{}).
+		return tx.Clauses(clause.Returning{}).
 			Model(&models.Notification{}).
-			Where("id IN ? AND status = ?", notificationIDs, notificationsenums.NotificationUnread).
+			Where("id IN ? AND user_id = ? AND status = ?", notificationIDs, userID, notificationsenums.NotificationUnread).
 			Update("status", notificationsenums.NotificationRead).
-			Find(&updatedNotifications).Error	
-		return err
+			Find(&updatedNotifications).Error
 	})
-
 	if err != nil {
 		return nil, globalerrors.NewAppError(500, "Failed to update notifications status", "", nil)
-	} 
+	}
 
 	updatedMap := make(map[string]bool)
 	for _, n := range updatedNotifications {
@@ -101,7 +100,6 @@ func (r *NotificationsRepository) MarkAllNotificationsAsRead(
 	response := make([]notificationssreponsesdtos.NotificationMarkResponseDTO, len(notificationIDs))
 	for i, id := range notificationIDs {
 		idStr := id.String()
-
 		if updatedMap[idStr] {
 			response[i] = notificationssreponsesdtos.NotificationMarkResponseDTO{
 				NotificationID:     idStr,
@@ -114,11 +112,11 @@ func (r *NotificationsRepository) MarkAllNotificationsAsRead(
 			}
 		}
 	}
-
 	return response, nil
-} 
+}
 
 func (r *NotificationsRepository) MarkNotificationAsRead(
+	userID string,
 	notificationID uuid.UUID,
 ) (*notificationssreponsesdtos.NotificationMarkResponseDTO, error) {
 	// 1. El constructor de tu VO requiere un string, así que pasamos notificationID.String()
@@ -132,7 +130,7 @@ func (r *NotificationsRepository) MarkNotificationAsRead(
 	// 2. Extraemos el tipo nativo uuid.UUID usando .Value() para la consulta de GORM
 	err = r.db.Clauses(clause.Returning{}).
 		Model(&models.Notification{}).
-		Where("id = ? AND status = ?", uuidVO.Value(), notificationsenums.NotificationUnread).
+		Where("id = ? AND user_id = ? AND status = ?", uuidVO.Value(), userID, notificationsenums.NotificationUnread).
 		Update("status", notificationsenums.NotificationRead).
 		Find(&updatedNotification).Error
 

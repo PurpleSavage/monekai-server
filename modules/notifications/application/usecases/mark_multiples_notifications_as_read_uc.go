@@ -10,16 +10,17 @@ type MarkMultiplesNotificationsAsReadUC struct {
 	notificationPersistencePort notificationsports.NotificationsPersistencePort
 }
 
-func NewMarkMultiplesNotificationsAsReadUC(notificationPersistencePort notificationsports.NotificationsPersistencePort) *MarkMultiplesNotificationsAsReadUC {
+func NewMarkMultiplesNotificationsAsReadUseCase(notificationPersistencePort notificationsports.NotificationsPersistencePort) *MarkMultiplesNotificationsAsReadUC {
 	return &MarkMultiplesNotificationsAsReadUC{
 		notificationPersistencePort: notificationPersistencePort,
 	}
 }
 
 func (uc *MarkMultiplesNotificationsAsReadUC) Execute(
+	userID string,
 	notificationIDs []uuid.UUID,
 ) ([]notificationssreponsesdtos.NotificationMarkResponseDTO, error) {
-	response, err := uc.notificationPersistencePort.MarkAllNotificationsAsRead(notificationIDs)
+	response, err := uc.notificationPersistencePort.MarkAllNotificationsAsRead(userID, notificationIDs)
 	if err != nil {
 		return nil, err
 	}

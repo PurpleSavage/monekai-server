@@ -75,6 +75,7 @@ func (h *SamplerController) CreateSong(w http.ResponseWriter, r *http.Request){
 		commoninfrastructuremappers.RespondWithError(w, globalerrors.NewAppError(500, "Internal Error", "Could not parse session data", err))
 		return
 	}
+	defer r.Body.Close()
 	var dto samplerequestsdto.GenerateSampleDTO
 	if err = json.NewDecoder(r.Body).Decode(&dto); err != nil {
 		commoninfrastructuremappers.RespondWithError(
@@ -293,7 +294,7 @@ func (h *SamplerController) ShareSample(w http.ResponseWriter, r *http.Request){
 		)
 		return
 	}
-
+	defer r.Body.Close()
 	if err := h.validator.ValidateStruct(dto); err != nil {
 		commoninfrastructuremappers.RespondWithError(w, err)
 		return

@@ -17,12 +17,16 @@ func NewMarkNotificationAsReadUseCase(
 	}
 }
 
-func (uc *MarkNotificationAsReadUseCase) Execute(notificationID string)(*notificationssreponsesdtos.NotificationMarkResponseDTO,error) {
+func (uc *MarkNotificationAsReadUseCase) Execute(
+	notificationID string,
+	userID string,
+
+)(*notificationssreponsesdtos.NotificationMarkResponseDTO,error) {
 	parseId , err:= authvalueobjects.NewUUIDVO(notificationID)
 	if err != nil {
 		return nil, err
 	}
-	response, err := uc.notificationRepository.MarkNotificationAsRead(parseId.Value())
+	response, err := uc.notificationRepository.MarkNotificationAsRead(userID,parseId.Value())
 	if err != nil {
 		return nil, err
 	}

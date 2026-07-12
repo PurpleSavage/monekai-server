@@ -10,6 +10,6 @@ import (
 type NotificationsPersistencePort interface {
 	SaveNotification(vo notificationsvalueobjects.SaveNotificationVO) (*notificationsentities.NotificationEntity, error)
 	ListNotifications(userID string, limit int, page int) ([]notificationssreponsesdtos.ItemNotificationDTO, error)
-	MarkAllNotificationsAsRead(notificationIDs []uuid.UUID) ([]notificationssreponsesdtos.NotificationMarkResponseDTO, error)
-	MarkNotificationAsRead(notificationID uuid.UUID) (*notificationssreponsesdtos.NotificationMarkResponseDTO, error) // <-- Corregido a singular
+	MarkAllNotificationsAsRead(userID string,notificationIDs []uuid.UUID) ([]notificationssreponsesdtos.NotificationMarkResponseDTO, error)
+	MarkNotificationAsRead(userID string, notificationID uuid.UUID) (*notificationssreponsesdtos.NotificationMarkResponseDTO, error) // <-- Corregido a singular
 }

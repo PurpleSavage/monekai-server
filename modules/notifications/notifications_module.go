@@ -27,6 +27,8 @@ func NotificationsBootstrap(
 	//usecases
 	saveNotificationUC := notificationsusecases.NewSaveNotificationUseCase(notificationsRepo)
 	listNotificationsUC := notificationsusecases.NewListNotificationsUseCase(notificationsRepo)
+	markAllNotificationsAsReadUC := notificationsusecases.NewMarkMultiplesNotificationsAsReadUseCase(notificationsRepo)
+	markNotificationAsReadUC := notificationsusecases.NewMarkNotificationAsReadUseCase(notificationsRepo)
 
 	//adapters -depent - uc
 	notificationsObserver:= notificationsinadapters.NewObserverNotificationSampleEvent(
@@ -42,6 +44,8 @@ func NotificationsBootstrap(
 		v,
 		listNotificationsUC,
 		sseManager,
+		markAllNotificationsAsReadUC,
+		markNotificationAsReadUC,
 	)
 	return  notificationscontroller.NotificationsMaproutes(controller)
 }
