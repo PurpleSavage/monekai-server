@@ -4,10 +4,12 @@ import (
 	notificationssreponsesdtos "github.com/PurpleSavage/monekai-server/modules/notifications/application/dtos/responses"
 	notificationsentities "github.com/PurpleSavage/monekai-server/modules/notifications/domain/entities"
 	notificationsvalueobjects "github.com/PurpleSavage/monekai-server/modules/notifications/domain/valueobjects"
+	"github.com/google/uuid"
 )
 
 type NotificationsPersistencePort interface {
-	SaveNotification(vo notificationsvalueobjects.SaveNotificationVO) (*notificationsentities.NotificationEntity, error )
-	ListNotifications(userID string,limit int,page int,) ([]notificationssreponsesdtos.ItemNotificationDTO, error)
+	SaveNotification(vo notificationsvalueobjects.SaveNotificationVO) (*notificationsentities.NotificationEntity, error)
+	ListNotifications(userID string, limit int, page int) ([]notificationssreponsesdtos.ItemNotificationDTO, error)
+	MarkAllNotificationsAsRead(notificationIDs []uuid.UUID) ([]notificationssreponsesdtos.NotificationMarkResponseDTO, error)
+	MarkNotificationAsRead(notificationID uuid.UUID) (notificationssreponsesdtos.NotificationMarkResponseDTO, error) // <-- Corregido a singular
 }
-
