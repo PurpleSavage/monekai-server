@@ -26,5 +26,5 @@ func (uc *MarkNotificationAsReadUseCase) Execute(notificationID string)(*notific
 	if err != nil {
 		return nil, err
 	}
-	return &response, nil
+	return response, nil
 }
