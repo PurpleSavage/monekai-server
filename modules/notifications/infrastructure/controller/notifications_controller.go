@@ -184,7 +184,7 @@ func (c *NotificationsController) MarkNotificationAsRead(w http.ResponseWriter, 
 func NotificationsMaproutes(nc *NotificationsController) chi.Router {
 	r := chi.NewRouter()
 	r.Use(nc.authMiddleware.AccessToken)
-	r.Get("/", nc.ListNotifications)
+	r.Get("/all", nc.ListNotifications)
 	r.Patch("/read-all", nc.MarkAllNotificationsAsRead)
 	r.Patch("/{id}/read", nc.MarkNotificationAsRead)
 	return r

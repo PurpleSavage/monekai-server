@@ -60,7 +60,7 @@ func (r *NotificationsRepository) ListNotifications(
 	page int,
 ) ([]notificationssreponsesdtos.ItemNotificationDTO, error) {
 	var notifications []models.Notification
-	err := r.db.Where("user_id = ?", userID).
+	err := r.db.Where("user_id = ? AND status = ?", userID,notificationsenums.NotificationUnread).
 		Order("created_at DESC").
 		Limit(limit).
 		Offset((page - 1) * limit).
