@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"github.com/PurpleSavage/monekai-server/cmd/scripts"
 	connection "github.com/PurpleSavage/monekai-server/configurations/persistenceconnections"
+	"github.com/PurpleSavage/monekai-server/modules/community"
 	"github.com/PurpleSavage/monekai-server/modules/notifications"
 	notificationsevents "github.com/PurpleSavage/monekai-server/modules/notifications/infrastructure/serverevents"
 	"github.com/PurpleSavage/monekai-server/modules/sampler"
@@ -93,6 +94,14 @@ func main() {
 		sampler.SamplerBootstrap(
 			db,
 			bucketObserver,
+			dtoValidator,
+			authmiddleware,
+		),
+	)
+	r.Mount(
+		"/community",
+		community.CommunityBootstrap(
+			db,
 			dtoValidator,
 			authmiddleware,
 		),
