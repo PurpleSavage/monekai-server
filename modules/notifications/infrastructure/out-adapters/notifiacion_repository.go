@@ -1,4 +1,4 @@
-package notificationsinadapters
+package notificationsoutadapters
 
 import (
 	models "github.com/PurpleSavage/monekai-server/configurations/persistence"
@@ -120,11 +120,11 @@ func (r *NotificationsRepository) MarkAllNotificationsAsRead(
 
 func (r *NotificationsRepository) MarkNotificationAsRead(
 	notificationID uuid.UUID,
-) (notificationssreponsesdtos.NotificationMarkResponseDTO, error) {
+) (*notificationssreponsesdtos.NotificationMarkResponseDTO, error) {
 	// 1. El constructor de tu VO requiere un string, así que pasamos notificationID.String()
 	uuidVO, err := authvalueobjects.NewUUIDVO(notificationID.String())
 	if err != nil {
-		return notificationssreponsesdtos.NotificationMarkResponseDTO{}, err
+		return nil, err
 	}
 
 	var updatedNotification models.Notification
@@ -137,7 +137,7 @@ func (r *NotificationsRepository) MarkNotificationAsRead(
 		Find(&updatedNotification).Error
 
 	if err != nil {
-		return notificationssreponsesdtos.NotificationMarkResponseDTO{}, globalerrors.NewAppError(
+		return nil, globalerrors.NewAppError(
 			500,
 			"Failed to update notification status",
 			"",
@@ -146,13 +146,13 @@ func (r *NotificationsRepository) MarkNotificationAsRead(
 	}
 
 	if updatedNotification.ID == uuid.Nil {
-		return notificationssreponsesdtos.NotificationMarkResponseDTO{
+		return &notificationssreponsesdtos.NotificationMarkResponseDTO{
 			NotificationID:     uuidVO.String(),
 			StatusNotification: notificationsenums.NotificationUnread,
 		}, nil
 	}
 
-	return notificationssreponsesdtos.NotificationMarkResponseDTO{
+	return &notificationssreponsesdtos.NotificationMarkResponseDTO{
 		NotificationID:     updatedNotification.ID.String(),
 		StatusNotification: notificationsenums.NotificationRead,
 	}, nil

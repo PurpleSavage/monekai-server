@@ -4,6 +4,7 @@ import (
 	notificationsusecases "github.com/PurpleSavage/monekai-server/modules/notifications/application/usecases"
 	notificationscontroller "github.com/PurpleSavage/monekai-server/modules/notifications/infrastructure/controller"
 	notificationsinadapters "github.com/PurpleSavage/monekai-server/modules/notifications/infrastructure/in-adapters"
+	notificationsoutadapters "github.com/PurpleSavage/monekai-server/modules/notifications/infrastructure/out-adapters"
 	notificationsevents "github.com/PurpleSavage/monekai-server/modules/notifications/infrastructure/serverevents"
 	authmiddlewares "github.com/PurpleSavage/monekai-server/modules/shared/auth/infrastructure/middlewares"
 	commonports "github.com/PurpleSavage/monekai-server/modules/shared/common/application/ports"
@@ -21,7 +22,7 @@ func NotificationsBootstrap(
 ) chi.Router{
 	
 	//adapters 
-	notificationsRepo:= notificationsinadapters.NewNotificationsRepository(db)
+	notificationsRepo:= notificationsoutadapters.NewNotificationsRepository(db)
 
 	//usecases
 	saveNotificationUC := notificationsusecases.NewSaveNotificationUseCase(notificationsRepo)
