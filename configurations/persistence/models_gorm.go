@@ -36,7 +36,7 @@ type Sample struct {
 	SampleName      string                  `gorm:"size:100;not null"`
 	Prompt          string                  `gorm:"type:text"`
 	InitialAudioURL *string                 `gorm:"type:text"`
-	Duration        int                     `gorm:"type:text"`
+	Duration        int                     `gorm:"not null"`
 	ModelVersion    samplerenums.ModelVersion `gorm:"type:varchar(30);not null;check:model_version IN ('stereo-melody-large', 'stereo-large', 'melody-large', 'large')"`
 	OutputFormat    samplerenums.OutputFormat `gorm:"type:varchar(10);not null;check:output_format IN ('mp3', 'wav')"`
 	PredictionID string            `gorm:"uniqueIndex"`                                                                                                         // PredictionID guarda el ID de Replicate para cuando llegue el webhook
