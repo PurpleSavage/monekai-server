@@ -9,14 +9,12 @@ import (
 type CommunityPersistencePort interface {
 	ListSharedSamples(
 		ctx context.Context,
-		userID string,
 		page int,
 		limit int,
 	) ([]communityentities.SharedSample, error)
 	
 	ListSharedSamplesVersion(
 		ctx context.Context,
-		userID string,
 		page int,
 		limit int,
 	) ([]communityentities.SharedSampleVersion, error)

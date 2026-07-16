@@ -2,7 +2,6 @@ package communityoutadapters
 
 import (
 	"context"
-
 	models "github.com/PurpleSavage/monekai-server/configurations/persistence"
 	communityports "github.com/PurpleSavage/monekai-server/modules/community/application/ports"
 	communityentities "github.com/PurpleSavage/monekai-server/modules/community/domain/entities"
@@ -21,8 +20,7 @@ func NewCommunityRepository(db *gorm.DB) communityports.CommunityPersistencePort
 }
 //respositorio para lista los samples compartidos 
 func (r *CommunityRepository) ListSharedSamples(
-	ctx context.Context,
-	userID string, 
+	ctx context.Context, 
 	page int, 
 	limit int,
 ) ([]communityentities.SharedSample, error){
@@ -68,7 +66,6 @@ func (r *CommunityRepository) ListSharedSamples(
 //función para listar los samples comaprtidos pero por verssion --> un sample compartido con verssion es un sample con efectos aplicados
 func (r *CommunityRepository) ListSharedSamplesVersion(
 	ctx context.Context,
-	userID string,
 	page int,
 	limit int,
 ) ([]communityentities.SharedSampleVersion, error) {
