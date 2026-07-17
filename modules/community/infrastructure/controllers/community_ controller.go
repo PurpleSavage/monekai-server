@@ -2,7 +2,6 @@ package communitycontrollers
 
 import (
 	"net/http"
-
 	communityusecases "github.com/PurpleSavage/monekai-server/modules/community/application/usecases"
 	communityinfrastructuremappers "github.com/PurpleSavage/monekai-server/modules/community/infrastructure/mappers"
 	authmiddlewares "github.com/PurpleSavage/monekai-server/modules/shared/auth/infrastructure/middlewares"
@@ -15,7 +14,7 @@ import (
 type CommunityController struct {
 	validator *validators.DTOValidator
 	authmiddleware *authmiddlewares.AuthMiddleware
-	listSahredSamples *communityusecases.ListSharedSamplesUC
+	listSharedSamples *communityusecases.ListSharedSamplesUC
 	listSharedSamplesVersion *communityusecases.ListSharedSamplesVersionUC
 }
 func NewCommunityController(
@@ -27,7 +26,7 @@ func NewCommunityController(
 	return &CommunityController{
 		validator: v,
 		authmiddleware: am,
-		listSahredSamples: listSharedSamples,
+		listSharedSamples: listSharedSamples,
 		listSharedSamplesVersion: listSharedSamplesVersion,
 	}
 }
@@ -40,7 +39,7 @@ func (nc *CommunityController) ListSharedSamples(w http.ResponseWriter, r *http.
 		commoninfrastructuremappers.RespondWithError(w,err)
 		return
 	}
-	response,error:= nc.listSahredSamples.Execute(r.Context(), paginationVO.Page, paginationVO.Limit)
+	response,error:= nc.listSharedSamples.Execute(r.Context(), paginationVO.Page, paginationVO.Limit)
 	if error != nil {
 		http.Error(w, error.Error(), http.StatusInternalServerError)
 		return
@@ -51,7 +50,20 @@ func (nc *CommunityController) ListSharedSamples(w http.ResponseWriter, r *http.
 }
 
 func (nc *CommunityController) ListSharedEditSamples(w http.ResponseWriter, r *http.Request) {
-	
+	page:= r.URL.Query().Get("page")
+	limit:= r.URL.Query().Get("limit")
+	paginationVO, err := commonvalueobjects.CreatePaginationVO(page, limit)
+	if err != nil {
+		commoninfrastructuremappers.RespondWithError(w,err)
+		return
+	}
+	response,error:= nc.listSharedSamplesVersion.Execute(r.Context(), paginationVO.Page, paginationVO.Limit)
+	if error != nil {
+		http.Error(w, error.Error(), http.StatusInternalServerError)
+		return
+	}
+	responseDTO:=communityinfrastructuremappers.BuildListSharedSampleVersionsResponse(response)
+	commoninfrastructuremappers.RespondWithJSON(w, http.StatusOK, responseDTO)
 }
 
 func CommunityMapRoutes(nc *CommunityController) chi.Router{
