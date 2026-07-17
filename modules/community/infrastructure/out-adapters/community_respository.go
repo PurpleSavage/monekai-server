@@ -2,12 +2,15 @@ package communityoutadapters
 
 import (
 	"context"
+
 	models "github.com/PurpleSavage/monekai-server/configurations/persistence"
 	communityports "github.com/PurpleSavage/monekai-server/modules/community/application/ports"
 	communityentities "github.com/PurpleSavage/monekai-server/modules/community/domain/entities"
 	communityinfrastructuremappers "github.com/PurpleSavage/monekai-server/modules/community/infrastructure/mappers"
 	communityraws "github.com/PurpleSavage/monekai-server/modules/community/infrastructure/raws"
+	authvalueobjects "github.com/PurpleSavage/monekai-server/modules/shared/auth/domain/valueobjects"
 	globalerrors "github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/errors"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -107,4 +110,21 @@ func (r *CommunityRepository) ListSharedSamplesVersion(
 	}
 
 	return communityinfrastructuremappers.MapToSharedSampleVersionsDomain(dbSharedVersions), nil
+}
+
+func (r *CommunityRepository) LikeToSharedSample(
+	ctx context.Context,
+	sampleID uuid.UUID,
+) (*authvalueobjects.UUIDVO, error) {
+	var sharedSampleModel models.SharedSample
+	err := r.db.WithContext(ctx).Where("id = ?", sampleID).First(&sharedSampleModel).Error
+	if err != nil {
+		return nil, globalerrors.NewAppError(404, "Shared sample not found", err.Error(), nil)
+	}
+	sharedSampleModel.Likes++
+	err = r.db.WithContext(ctx).Save(&sharedSampleModel).Error
+	if err != nil {
+		return nil, globalerrors.NewAppError(500, "Failed to like shared sample", err.Error(), nil)
+	}
+	return authvalueobjects.NewUUIDVO(sharedSampleModel.ID.String())
 }
