@@ -15,7 +15,7 @@ To provide a responsive editing experience, the frontend also uses **IndexedDB**
 
 ## Infrastructure Diagram
 
-![Monekai Infrastructure](docs/assets/moneka-infrastructure.jpeg)
+![Monekai Infrastructure](docs/assets/monekai-infrastructure.jpeg)
 
 ---
 
