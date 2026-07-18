@@ -20,12 +20,15 @@ func CommunityBootstrap(
 	listSharedSamples := communityusecases.NewListSharedSamplesUC(communityRepo)
 	listSharedSamplesVersion := communityusecases.NewListSharedSamplesVersionUC(communityRepo)
 	likeToSharedSample := communityusecases.NewLikeToSharedSampleUC(communityRepo)
+	downloadToSharedSample := communityusecases.NewDownloadToSharedSampleUC(communityRepo)
+
 	controller:= communitycontrollers.NewCommunityController(
 		v,
 		am,
 		listSharedSamples,
 		listSharedSamplesVersion,
 		likeToSharedSample,
+		downloadToSharedSample,
 	)
 	return communitycontrollers.CommunityMapRoutes(controller)
 }
