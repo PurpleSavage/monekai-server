@@ -19,6 +19,7 @@ type CommunityController struct {
 	listSharedSamples *communityusecases.ListSharedSamplesUC
 	listSharedSamplesVersion *communityusecases.ListSharedSamplesVersionUC
 	likeToSharedSample *communityusecases.LikeToSharedSampleUC
+	downloadToSharedSample *communityusecases.DownloadToSharedSampleUC
 }
 func NewCommunityController(
 	v *validators.DTOValidator,
@@ -26,6 +27,7 @@ func NewCommunityController(
 	listSharedSamples *communityusecases.ListSharedSamplesUC,
 	listSharedSamplesVersion *communityusecases.ListSharedSamplesVersionUC,
 	likeToSharedSample *communityusecases.LikeToSharedSampleUC,
+	downloadToSharedSample *communityusecases.DownloadToSharedSampleUC,
 ) *CommunityController {
 	return &CommunityController{
 		validator: v,
@@ -33,6 +35,7 @@ func NewCommunityController(
 		listSharedSamples: listSharedSamples,
 		listSharedSamplesVersion: listSharedSamplesVersion,
 		likeToSharedSample: likeToSharedSample,
+		downloadToSharedSample: downloadToSharedSample,
 	}
 }
 
@@ -87,11 +90,27 @@ func (nc *CommunityController) LikeToSharedSample(w http.ResponseWriter, r *http
 	commoninfrastructuremappers.RespondWithJSON(w, http.StatusOK, dtoResponse)
 }
 
+func (nc *CommunityController) DownloadSample(w http.ResponseWriter, r *http.Request) {
+	sampleID := chi.URLParam(r, "sampleID")
+	sampleIDParsed,err:= authvalueobjects.NewUUIDVO(sampleID)
+	if err != nil {
+		commoninfrastructuremappers.RespondWithError(w,err)
+		return
+	}
+	response, err:= nc.downloadToSharedSample.Execute(r.Context(), sampleIDParsed.Value())
+	if err != nil {
+		commoninfrastructuremappers.RespondWithError(w,err)
+		return
+	}
+	commoninfrastructuremappers.RespondWithJSON(w, http.StatusOK, response)
+}
+
 func CommunityMapRoutes(nc *CommunityController) chi.Router{ 
 	r := chi.NewRouter()
 	r.Use(nc.authmiddleware.AccessToken)
 	r.Get("/samples", nc.ListSharedSamples)
 	r.Get("/edit-samples", nc.ListSharedEditSamples)
 	r.Patch("/like/{sampleID}",nc.LikeToSharedSample)
+	r.Get("/download/{sampleID}", nc.DownloadSample)
 	return r
 }

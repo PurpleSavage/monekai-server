@@ -6,6 +6,7 @@ import (
 	models "github.com/PurpleSavage/monekai-server/configurations/persistence"
 	communityports "github.com/PurpleSavage/monekai-server/modules/community/application/ports"
 	communityentities "github.com/PurpleSavage/monekai-server/modules/community/domain/entities"
+	communityvalueobjects "github.com/PurpleSavage/monekai-server/modules/community/domain/valueobjects"
 	communityinfrastructuremappers "github.com/PurpleSavage/monekai-server/modules/community/infrastructure/mappers"
 	communityraws "github.com/PurpleSavage/monekai-server/modules/community/infrastructure/raws"
 	authvalueobjects "github.com/PurpleSavage/monekai-server/modules/shared/auth/domain/valueobjects"
@@ -127,4 +128,21 @@ func (r *CommunityRepository) LikeToSharedSample(
 		return nil, globalerrors.NewAppError(500, "Failed to like shared sample", err.Error(), nil)
 	}
 	return authvalueobjects.NewUUIDVO(sharedSampleModel.ID.String())
+}
+
+func (r *CommunityRepository) DownloadToSharedSample(
+	ctx context.Context,
+	sampleID uuid.UUID,
+) (*communityvalueobjects.DownloadSharedSampleVO, error) {
+	var sharedSampleModel models.SharedSample
+	err := r.db.WithContext(ctx).Where("id = ?", sampleID).First(&sharedSampleModel).Error
+	if err != nil {
+		return nil, globalerrors.NewAppError(404, "Shared sample not found", err.Error(), nil)
+	}
+	sharedSampleModel.Downloads++
+	err = r.db.WithContext(ctx).Save(&sharedSampleModel).Error
+	if err != nil {
+		return nil, globalerrors.NewAppError(500, "Failed to download shared sample", err.Error(), nil)
+	}
+	return communityvalueobjects.NewDownloadSharedSampleVO(sharedSampleModel.ID, sharedSampleModel.Downloads), nil
 }
