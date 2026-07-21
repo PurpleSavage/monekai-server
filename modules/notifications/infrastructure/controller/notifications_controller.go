@@ -82,6 +82,7 @@ func (c *NotificationsController) ListNotifications(w http.ResponseWriter, r *ht
 	}
 
 	notifications, err:= c.listNotificationsUC.Execute(
+		r.Context(),
 		dtoSession.Id,
 		queryDto.Limit,
 		queryDto.Page,

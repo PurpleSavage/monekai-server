@@ -1,6 +1,7 @@
 package notificationsoutadapters
 
 import (
+	"context"
 	models "github.com/PurpleSavage/monekai-server/configurations/persistence"
 	notificationssreponsesdtos "github.com/PurpleSavage/monekai-server/modules/notifications/application/dtos/responses"
 	notificationsports "github.com/PurpleSavage/monekai-server/modules/notifications/application/ports"
@@ -22,6 +23,15 @@ type NotificationsRepository struct {
 
 func NewNotificationsRepository(db *gorm.DB) notificationsports.NotificationsPersistencePort {
 	return &NotificationsRepository{db: db}
+}
+
+func (r *NotificationsRepository) CountTotalNotifications(ctx context.Context, userID string) (int, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&models.Notification{}).Where("id = ? AND status = ?", userID, "unread").Count(&count).Error
+	if err != nil {
+		return 0, globalerrors.NewAppError(500, "Failed to count total notifications", "", nil)
+	}
+	return int(count), nil
 }
 
 func (r *NotificationsRepository) SaveNotification(
@@ -55,16 +65,26 @@ func (r *NotificationsRepository) SaveNotification(
 }
 
 func (r *NotificationsRepository) ListNotifications(
+	ctx context.Context,
 	userID string,
 	limit int,
 	page int,
 ) ([]notificationssreponsesdtos.ItemNotificationDTO, error) {
+	
 	var notifications []models.Notification
-	err := r.db.Where("user_id = ? AND status = ?", userID,notificationsenums.NotificationUnread).
+	
+	err := r.db.WithContext(ctx).
+		Where(
+			"user_id = ? AND status = ?", 
+			userID,
+			notificationsenums.NotificationUnread,
+		).
 		Order("created_at DESC").
 		Limit(limit).
 		Offset((page - 1) * limit).
 		Find(&notifications).Error
+
+
 	if err != nil {
 		return nil, globalerrors.NewAppError(500, "Failed to list notifications", "", nil)
 	}
@@ -84,7 +104,12 @@ func (r *NotificationsRepository) MarkAllNotificationsAsRead(
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		return tx.Clauses(clause.Returning{}).
 			Model(&models.Notification{}).
-			Where("id IN ? AND user_id = ? AND status = ?", notificationIDs, userID, notificationsenums.NotificationUnread).
+			Where(
+				"id IN ? AND user_id = ? AND status = ?",
+				notificationIDs,
+				userID,
+				notificationsenums.NotificationUnread,
+			).
 			Update("status", notificationsenums.NotificationRead).
 			Find(&updatedNotifications).Error
 	})
