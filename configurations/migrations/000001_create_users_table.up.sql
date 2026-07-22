@@ -84,13 +84,58 @@ CREATE TABLE IF NOT EXISTS notifications (
 );
 CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
 
-CREATE TABLE IF NOT EXISTS payment_logs (
+
+CREATE TABLE IF NOT EXISTS payments (
+
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    external_ref_id VARCHAR NOT NULL,
+
     user_id UUID NOT NULL,
+
+    credit_package_id UUID NOT NULL,
+
+    paddle_transaction_id VARCHAR NOT NULL UNIQUE,
+
+    paddle_price_id VARCHAR NOT NULL,
+
+    credits_purchased INT NOT NULL,
+
+    amount NUMERIC(10,2) NOT NULL,
+
+    currency VARCHAR(3) NOT NULL,
+
+    status VARCHAR(30) NOT NULL,
+
     raw_payload JSONB,
-    status VARCHAR,
-    created_at TIMESTAMP,
-    CONSTRAINT payment_logs_external_ref_id_key UNIQUE (external_ref_id),
-    CONSTRAINT fk_payment_logs_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_payment_user
+        FOREIGN KEY(user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_payment_package
+        FOREIGN KEY(credit_package_id)
+        REFERENCES credit_packages(id)
+);
+CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id);
+
+CREATE TABLE IF NOT EXISTS credit_packages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    paddle_price_id VARCHAR NOT NULL UNIQUE,
+
+    name VARCHAR(100) NOT NULL,
+
+    credits INT NOT NULL,
+
+    price NUMERIC(10,2) NOT NULL,
+
+    currency VARCHAR(3) NOT NULL DEFAULT 'USD',
+
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );

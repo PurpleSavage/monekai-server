@@ -25,7 +25,7 @@ func (r *UserRepository) CreateUser(data authvalueobjects.CreateUserVO) (*authen
     newUser := models.User{
         ExternalID: data.ExternalID,
         Email:      data.Email,
-        PhotoUrl:   data.PhotoUrl,
+        PhotoURL:   data.PhotoUrl,
         Credits:    100,
     }
     newSession := models.Session{
@@ -56,7 +56,7 @@ func (r *UserRepository) CreateUser(data authvalueobjects.CreateUserVO) (*authen
     return &authentities.UserEntity{
         Id:        newUser.ID.String(), 
         Email:     newUser.Email,
-        PhotoUrl:  newUser.PhotoUrl,
+        PhotoUrl:  newUser.PhotoURL,
         CreatedAt: newUser.CreatedAt, 
         Credits:   newUser.Credits,
     }, nil
@@ -78,7 +78,7 @@ func (r *UserRepository) FindUserByEmail(email string)(*authentities.UserEntity,
         Email:     userModel.Email,
         CreatedAt: userModel.CreatedAt,
         Credits:   userModel.Credits,
-        PhotoUrl:  userModel.PhotoUrl, 
+        PhotoUrl:  userModel.PhotoURL, 
     }, nil
 }
 
