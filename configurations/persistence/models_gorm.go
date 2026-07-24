@@ -2,7 +2,9 @@ package models
 
 import (
 	"time"
+
 	notificationsenums "github.com/PurpleSavage/monekai-server/modules/notifications/domain/enums"
+	paymentsvalueobjects "github.com/PurpleSavage/monekai-server/modules/payments/domain/valueobjects"
 	samplerenums "github.com/PurpleSavage/monekai-server/modules/sampler/domain/enums"
 	"github.com/google/uuid"
 	"gorm.io/datatypes"
@@ -162,7 +164,7 @@ type CreditPackage struct {
 	ID uuid.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
 
 	// paddle, stripe, polar...
-	Provider string `gorm:"type:varchar(30);not null;default:'paddle';index"`
+	Provider paymentsvalueobjects.Provider `gorm:"type:varchar(30);not null;default:'paddle';index;check provider IN ('paddle')"`
 
 	// ID del precio en el proveedor
 	PriceID string `gorm:"type:varchar;uniqueIndex;not null"`
