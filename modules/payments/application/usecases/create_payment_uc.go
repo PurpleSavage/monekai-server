@@ -7,21 +7,24 @@ import (
 	paymentsresponsesdtos "github.com/PurpleSavage/monekai-server/modules/payments/application/dtos/reponses"
 	paymentsports "github.com/PurpleSavage/monekai-server/modules/payments/application/ports"
 	paymentsvalueobjects "github.com/PurpleSavage/monekai-server/modules/payments/domain/valueobjects"
-	authports "github.com/PurpleSavage/monekai-server/modules/shared/auth/application/ports"
+	authusecases "github.com/PurpleSavage/monekai-server/modules/shared/auth/application/usecases"
 )
 
 type CreatePaymentUseCase struct{
 	paymentRepo paymentsports.PaymentsPersistencePort
-	userRepo 	authports.UserPersistencePort
+
 	paymentService paymentsports.PaymentServicePort
+	findUserByEmailUC *authusecases.FindUserByEmailUseCase
 }
 func NewCreatePaymentUseCase(
 	paymentRepo paymentsports.PaymentsPersistencePort,
-	userRepo 	authports.UserPersistencePort,
+	paymentService paymentsports.PaymentServicePort,
+	findUserByEmailUC *authusecases.FindUserByEmailUseCase,
 ) *CreatePaymentUseCase{
 	return  &CreatePaymentUseCase{
 		paymentRepo: paymentRepo,
-		userRepo:userRepo,
+		paymentService: paymentService,
+		findUserByEmailUC: findUserByEmailUC,
 	}
 }
 func (c *CreatePaymentUseCase) Execute(
@@ -30,7 +33,7 @@ func (c *CreatePaymentUseCase) Execute(
 	email string,
 	ctx context.Context,
 )(*paymentsresponsesdtos.CreateTransactionResponseDTO, error){
-	user,err:=c.userRepo.FindUserByEmail(email)
+	user,err:=c.findUserByEmailUC.Execute(email)
 	if err!=nil{
 		return nil,err
 	}
