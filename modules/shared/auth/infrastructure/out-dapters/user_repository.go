@@ -79,6 +79,7 @@ func (r *UserRepository) FindUserByEmail(email string)(*authentities.UserEntity,
         CreatedAt: userModel.CreatedAt,
         Credits:   userModel.Credits,
         PhotoUrl:  userModel.PhotoURL, 
+        CustomerID: userModel.ProviderCustomerID,
     }, nil
 }
 
@@ -94,4 +95,21 @@ func (r *UserRepository) UpdateSession(token string, userId string) error{
         return globalerrors.NewAppError(404, "Session Not Found", "No active session found for the given user", nil)
     }
     return  nil
+}
+
+func (r *UserRepository) UpdateCustomerID(customerID string, userID string) (string, error) {
+	err := r.db.Model(&models.User{}).
+		Where("id = ?", userID).
+		Update("provider_customer_id", customerID).Error
+
+	if err != nil {
+		return "", globalerrors.NewAppError(
+			500,
+			"Database Error",
+			"Failed to update customer id in database",
+			err,
+		)
+	}
+
+	return userID, nil
 }

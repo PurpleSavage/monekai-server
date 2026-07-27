@@ -1,12 +1,8 @@
 package authvalueobjects
 
 import (
-	"errors"
 	"strings"
-)
-
-var ErrEmptyToken = errors.New(
-	"token cannot be empty",
+	commondomainerrors "github.com/PurpleSavage/monekai-server/modules/shared/common/domain/errors"
 )
 
 
@@ -14,12 +10,16 @@ type TokenVO struct {
 	value string
 }
 
-func NewTokenVO(value string) (TokenVO, error) {
+func NewTokenVO(value string) (*TokenVO, error) {
 	if strings.TrimSpace(value) == "" {
-		return TokenVO{}, ErrEmptyToken
+
+		return nil, commondomainerrors.NewValidationError(
+			"token",
+			"token cannot be empty",
+		)
 	}
 
-	return TokenVO{
+	return &TokenVO{
 		value: value,
 	}, nil
 }

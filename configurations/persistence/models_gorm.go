@@ -54,6 +54,8 @@ type User struct {
 	Samples []Sample `gorm:"foreignKey:UserID"`
 
 	CreatedAt time.Time `gorm:"autoCreateTime"`
+
+	ProviderCustomerID *string `gorm:"type:varchar;uniqueIndex;default:null"`
 }
 
 //

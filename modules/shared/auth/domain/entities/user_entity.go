@@ -8,4 +8,5 @@ type UserEntity struct{
 	PhotoUrl *string
 	CreatedAt time.Time
 	Credits int
+	CustomerID *string
 }

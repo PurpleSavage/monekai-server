@@ -1,4 +1,4 @@
-package paymentsentites
+package paymentsentities
 
 import (
 	paymentsvalueobjects "github.com/PurpleSavage/monekai-server/modules/payments/domain/valueobjects"

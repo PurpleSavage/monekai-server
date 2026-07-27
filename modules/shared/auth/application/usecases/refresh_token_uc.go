@@ -19,17 +19,17 @@ func NewRefreshTokenUseCase(
 }
 
 
-func (r *RefreshTokenUseCase) Execute(dto authrequestsdtos.SessionRequestDto) (authvalueobjects.TokenVO, error) {
+func (r *RefreshTokenUseCase) Execute(dto authrequestsdtos.SessionRequestDto) (*authvalueobjects.TokenVO, error) {
 	
 	// Generamos el nuevo Access Token de corta duración (1 minuto) pasándole el struct completo
 	token, err := r.jwtService.GenerateToken(dto, "1m")
 	if err != nil {
-		return authvalueobjects.TokenVO{}, err
+		return nil, err
 	}
 	
 	validatedtoken, err := authvalueobjects.NewTokenVO(token)
 	if err != nil {
-		return authvalueobjects.TokenVO{}, err
+		return nil, err
 	}
 	
 	return validatedtoken, nil

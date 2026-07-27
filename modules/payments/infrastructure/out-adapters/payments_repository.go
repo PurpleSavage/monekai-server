@@ -11,16 +11,16 @@ import (
 	"gorm.io/gorm"
 )
 
-type SamplerRepository struct {
+type PaymentRepository struct {
 	db *gorm.DB
 }
 
-func NewSamplerrepository(db *gorm.DB) paymentsports.PaymentsPersistencePort{
-	return  &SamplerRepository{
+func NewPaymentRepository(db *gorm.DB) paymentsports.PaymentsPersistencePort{
+	return  &PaymentRepository{
 		db: db,
 	}
 }
-func  (r *SamplerRepository)ListCreditPackages(ctx context.Context)([]*paymentsentites.CreditPackageEntity,error){
+func  (r *PaymentRepository)ListCreditPackages(ctx context.Context)([]*paymentsentites.CreditPackageEntity,error){
 	var creditPackages []models.CreditPackage
 	err:= r.db.WithContext(ctx).Find(&creditPackages).Error
 	if err!= nil{
@@ -37,7 +37,7 @@ func  (r *SamplerRepository)ListCreditPackages(ctx context.Context)([]*paymentse
 	}
 	return packages,nil
 }
-func (r *SamplerRepository) GetCreditPackage(packageID string) (*paymentsentites.CreditPackageEntity,error) {
+func (r *PaymentRepository) GetCreditPackage(packageID string) (*paymentsentites.CreditPackageEntity,error) {
 	var creditPackage models.CreditPackage
 	err:= r.db.Where("id = ?",packageID).Find(&creditPackage).Error
 	if err != nil {

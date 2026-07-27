@@ -27,6 +27,8 @@ type ConfigEnvs struct{
 	R2PublicURL       string
 
 	Enviroment	string
+
+	PaddleApiKey string
 }
 
 var Envs *ConfigEnvs
@@ -56,12 +58,13 @@ func LoadEnvs()  {
 
 		ReplicateWebhookSecret:getEnv("REPLICATE_WEBHOOK_SECRET","default"),
 
-		R2AccountID:       getEnv("R2_ACCOUNT_ID", ""),
-		R2AccessKeyID:     getEnv("R2_ACCESS_KEY_ID", ""),
-		R2SecretAccessKey: getEnv("R2_SECRET_ACCESS_KEY", ""),
-		R2BucketName:      getEnv("R2_BUCKET_NAME", ""),
-		R2PublicURL:       getEnv("R2_PUBLIC_URL", ""),
+		R2AccountID:       getEnv("R2_ACCOUNT_ID", "default"),
+		R2AccessKeyID:     getEnv("R2_ACCESS_KEY_ID", "default"),
+		R2SecretAccessKey: getEnv("R2_SECRET_ACCESS_KEY", "default"),
+		R2BucketName:      getEnv("R2_BUCKET_NAME", "default"),
+		R2PublicURL:       getEnv("R2_PUBLIC_URL", "default"),
 
+		PaddleApiKey: getEnv("PADDLE_API_KEY","default"),
 	}
 }
 
