@@ -1,9 +1,8 @@
-DROP TABLE IF EXISTS payment_logs;
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS credit_packages;
 DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS shared_samples;
 DROP TABLE IF EXISTS sample_versions;
 DROP TABLE IF EXISTS samples;
 DROP TABLE IF EXISTS sessions;
 DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS payments;
-DROP TABLE IF EXISTS credit_packages;
