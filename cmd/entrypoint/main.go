@@ -9,6 +9,7 @@ import (
 	"github.com/PurpleSavage/monekai-server/modules/community"
 	"github.com/PurpleSavage/monekai-server/modules/notifications"
 	notificationsevents "github.com/PurpleSavage/monekai-server/modules/notifications/infrastructure/serverevents"
+	"github.com/PurpleSavage/monekai-server/modules/payments"
 	"github.com/PurpleSavage/monekai-server/modules/sampler"
 	"github.com/PurpleSavage/monekai-server/modules/shared/auth"
 	authinadapters "github.com/PurpleSavage/monekai-server/modules/shared/auth/infrastructure/in-adapters"
@@ -107,6 +108,14 @@ func main() {
 		),
 	)
 	
-	
+	r.Mount(
+		"/payments",
+		payments.PaymentsBootstrap(
+			db,
+			bucketObserver,
+			dtoValidator,
+			authmiddleware,
+		),
+	)
 	http.ListenAndServe(":8080", r)
 }

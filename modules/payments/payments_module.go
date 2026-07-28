@@ -3,6 +3,7 @@ package payments
 import (
 	paymentsusecases "github.com/PurpleSavage/monekai-server/modules/payments/application/usecases"
 	paymentscontroller "github.com/PurpleSavage/monekai-server/modules/payments/infrastructure/controllers"
+	paymentsmiddlewares "github.com/PurpleSavage/monekai-server/modules/payments/infrastructure/middlewares"
 	paymentsoutadapters "github.com/PurpleSavage/monekai-server/modules/payments/infrastructure/out-adapters"
 	authusecases "github.com/PurpleSavage/monekai-server/modules/shared/auth/application/usecases"
 	authmiddlewares "github.com/PurpleSavage/monekai-server/modules/shared/auth/infrastructure/middlewares"
@@ -12,7 +13,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm"
 )
-func SamplerBootstrap(
+func PaymentsBootstrap(
 	db *gorm.DB,
 	ob commonports.ObserverBucketPort,
 	v *validators.DTOValidator,
@@ -22,6 +23,10 @@ func SamplerBootstrap(
 	paymentRepo:= paymentsoutadapters.NewPaymentRepository(db)
 	paymentService,_:= paymentsoutadapters.NewPaymentServiceAdapter()
 
+	//middlewarespayments
+	paymentVirifyMiddleware:=paymentsmiddlewares.NewPaymentWebhookVerifier()
+
+	
 	findUserByEmailUC:= authusecases.NewFindUserByEmailUseCase(userRepo)
 	createPaymentUC:= paymentsusecases.NewCreatePaymentUseCase(
 		paymentRepo,
@@ -35,6 +40,7 @@ func SamplerBootstrap(
 		authmiddleware,
 		createPaymentUC,
 		listCreditsUC,
+		paymentVirifyMiddleware,
 	)
 	return paymentscontroller.PaymentsMapRoutes(controller)
 }

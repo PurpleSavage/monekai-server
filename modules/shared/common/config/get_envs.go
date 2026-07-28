@@ -29,6 +29,7 @@ type ConfigEnvs struct{
 	Enviroment	string
 
 	PaddleApiKey string
+	 PaddleWebhookSecret string
 }
 
 var Envs *ConfigEnvs
@@ -65,6 +66,7 @@ func LoadEnvs()  {
 		R2PublicURL:       getEnv("R2_PUBLIC_URL", "default"),
 
 		PaddleApiKey: getEnv("PADDLE_API_KEY","default"),
+		PaddleWebhookSecret: getEnv("PADDLE_WEBHOOK_SECRET","default",),
 	}
 }
 

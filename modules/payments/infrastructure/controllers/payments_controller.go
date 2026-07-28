@@ -2,8 +2,8 @@ package paymentscontroller
 
 import (
 	"net/http"
-
 	paymentsusecases "github.com/PurpleSavage/monekai-server/modules/payments/application/usecases"
+	paymentsmiddlewares "github.com/PurpleSavage/monekai-server/modules/payments/infrastructure/middlewares"
 	authrequestsdtos "github.com/PurpleSavage/monekai-server/modules/shared/auth/application/dtos/requests"
 	authinadapters "github.com/PurpleSavage/monekai-server/modules/shared/auth/infrastructure/in-adapters"
 	authmiddlewares "github.com/PurpleSavage/monekai-server/modules/shared/auth/infrastructure/middlewares"
@@ -17,6 +17,7 @@ import (
 type PaymentsController struct {
 	validator  *validators.DTOValidator
 	authMiddleware *authmiddlewares.AuthMiddleware
+	paymentsMiddleware *paymentsmiddlewares.PaymentWebhookVerifier
 	createPaymentUC *paymentsusecases.CreatePaymentUseCase
 	listCreditPackages *paymentsusecases.ListCreditPackagesUseCase
 }
@@ -25,12 +26,14 @@ func NewPaymentsController(
 	am *authmiddlewares.AuthMiddleware,
 	createPaymentUC *paymentsusecases.CreatePaymentUseCase,
 	listCreditPackages *paymentsusecases.ListCreditPackagesUseCase,
+	paymentsmiddlewares *paymentsmiddlewares.PaymentWebhookVerifier,
 ) *PaymentsController {
 	return &PaymentsController{
 		validator:v,
 		authMiddleware: am,
 		createPaymentUC: createPaymentUC,
 		listCreditPackages: listCreditPackages,
+		paymentsMiddleware: paymentsmiddlewares,
 	}
 }
 func (sc *PaymentsController) CreatePayment(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +48,12 @@ func (sc *PaymentsController) CreatePayment(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	packageID := r.URL.Query().Get("packageId")
-	response, err:= sc.createPaymentUC.Execute(packageID,r.Context())
+	response, err:= sc.createPaymentUC.Execute(
+		packageID,
+		dtoSession.Id,
+		dtoSession.Email,
+		r.Context(),
+	)
 	if err!= nil{
 		commoninfrastructuremappers.RespondWithError(w, err)
 		return
@@ -63,6 +71,11 @@ func PaymentsMapRoutes(sc *PaymentsController) chi.Router{
 	r := chi.NewRouter()
 	r.Use(sc.authMiddleware.AccessToken)
 	r.Post("/create", sc.CreatePayment)
-	r.Post("/webhook", sc.ReceivePaymentWebhook)
+
+	r.Group(func(r chi.Router){
+		r.Use(sc.paymentsMiddleware.Verify)
+		r.Post("/webhook", sc.ReceivePaymentWebhook)
+	})
+
 	return r
 }
