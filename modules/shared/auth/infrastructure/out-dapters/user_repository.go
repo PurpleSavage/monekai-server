@@ -97,6 +97,44 @@ func (r *UserRepository) UpdateSession(token string, userId string) error{
     return  nil
 }
 
+func (r *UserRepository) FindUserByID(userID string) (*authentities.UserEntity, error) {
+	var userModel models.User
+	err := r.db.Where("id = ?", userID).First(&userModel).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, globalerrors.NewAppError(404, "User not found", "There is no user with that ID", err)
+		}
+		return nil, globalerrors.NewAppError(500, "Database Error", "Failed to find user by ID", err)
+	}
+	return &authentities.UserEntity{
+		Id:         userModel.ID.String(),
+		Email:      userModel.Email,
+		CreatedAt:  userModel.CreatedAt,
+		Credits:    userModel.Credits,
+		PhotoUrl:   userModel.PhotoURL,
+		CustomerID: userModel.ProviderCustomerID,
+	}, nil
+}
+
+func (r *UserRepository) AddCredits(userID string, credits int) error {
+	result := r.db.Model(&models.User{}).
+		Where("id = ?", userID).
+		UpdateColumn("credits", gorm.Expr("credits + ?", credits))
+
+	if result.Error != nil {
+		return globalerrors.NewAppError(
+			500,
+			"Database Error",
+			"Failed to add credits to user",
+			result.Error,
+		)
+	}
+	if result.RowsAffected == 0 {
+		return globalerrors.NewAppError(404, "User Not Found", "No user found with the given ID", nil)
+	}
+	return nil
+}
+
 func (r *UserRepository) UpdateCustomerID(customerID string, userID string) (string, error) {
 	err := r.db.Model(&models.User{}).
 		Where("id = ?", userID).

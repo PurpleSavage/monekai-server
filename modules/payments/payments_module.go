@@ -34,6 +34,10 @@ func PaymentsBootstrap(
 		findUserByEmailUC,
 	)
 	listCreditsUC:= paymentsusecases.NewListCreditPackageUseCase(paymentRepo)
+	processPaymentWebhookUC:= paymentsusecases.NewProcessPaymentWebhookUseCase(
+		paymentRepo,
+		userRepo,
+	)
 	
 	controller := paymentscontroller.NewPaymentsController(
 		v,
@@ -41,6 +45,8 @@ func PaymentsBootstrap(
 		createPaymentUC,
 		listCreditsUC,
 		paymentVirifyMiddleware,
+		processPaymentWebhookUC,
+		ob,
 	)
 	return paymentscontroller.PaymentsMapRoutes(controller)
 }

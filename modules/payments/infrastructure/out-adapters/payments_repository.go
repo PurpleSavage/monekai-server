@@ -58,3 +58,57 @@ func (r *PaymentRepository) GetCreditPackage(packageID string) (*paymentsentites
 	}
 	return paymentsinfrastructuremappers.ToCreditPackagesEntity(creditPackage) , nil
 }
+
+func (r *PaymentRepository) GetCreditPackageByPriceID(priceID string) (*paymentsentites.CreditPackageEntity, error) {
+	var creditPackage models.CreditPackage
+	err := r.db.Where("price_id = ?", priceID).First(&creditPackage).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, globalerrors.NewAppError(
+				404,
+				"Not Found",
+				"Credit package not found for the given price ID",
+				err,
+			)
+		}
+		return nil, globalerrors.NewAppError(
+			500,
+			"Database Error",
+			"Error getting credit package by price ID",
+			err,
+		)
+	}
+	return paymentsinfrastructuremappers.ToCreditPackagesEntity(creditPackage), nil
+}
+
+func (r *PaymentRepository) SavePayment(ctx context.Context, payment *paymentsentites.PaymentEntity) error {
+	model := paymentsinfrastructuremappers.ToPaymentModel(payment)
+	err := r.db.WithContext(ctx).Create(model).Error
+	if err != nil {
+		return globalerrors.NewAppError(
+			500,
+			"Database Error",
+			"Failed to save payment",
+			err,
+		)
+	}
+	payment.ID = model.ID.String()
+	return nil
+}
+
+func (r *PaymentRepository) FindPaymentByProviderTransactionID(transactionID string) (*paymentsentites.PaymentEntity, error) {
+	var payment models.Payment
+	err := r.db.Where("provider_transaction_id = ?", transactionID).First(&payment).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, globalerrors.NewAppError(
+			500,
+			"Database Error",
+			"Error finding payment by transaction ID",
+			err,
+		)
+	}
+	return paymentsinfrastructuremappers.ToPaymentEntityFromModel(payment), nil
+}
