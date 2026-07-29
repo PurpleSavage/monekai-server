@@ -36,6 +36,7 @@ func NotificationsBootstrap(
 		sseManager,
 	)
 	ob.AddObserver(notificationsObserver, "sample_event")
+	ob.AddObserver(notificationsObserver,"payment_event")
 
 
 	
