@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
 	"github.com/PurpleSavage/monekai-server/cmd/scripts"
 	connection "github.com/PurpleSavage/monekai-server/configurations/persistenceconnections"
 	"github.com/PurpleSavage/monekai-server/modules/community"
@@ -16,14 +17,13 @@ import (
 	authmiddlewares "github.com/PurpleSavage/monekai-server/modules/shared/auth/infrastructure/middlewares"
 	"github.com/PurpleSavage/monekai-server/modules/shared/common/config"
 	commoninadapters "github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/in-adapters"
+	commonmiddlewares "github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/middlewares"
 	"github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/validators"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/cors"
 )
 func main() {
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:4200"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -36,6 +36,10 @@ func main() {
 		AllowCredentials: true, 
 	})
 	r.Use(corsHandler.Handler)
+
+	logger:=commonmiddlewares.NewLoggerMiddleware()
+	r.Use(logger.Log)
+	
 	config.LoadEnvs()
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",

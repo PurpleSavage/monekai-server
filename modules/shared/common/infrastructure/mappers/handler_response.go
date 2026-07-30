@@ -2,6 +2,7 @@ package commoninfrastructuremappers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	commondomainerrors "github.com/PurpleSavage/monekai-server/modules/shared/common/domain/errors"
@@ -15,9 +16,15 @@ func RespondWithJSON(w http.ResponseWriter, status int, payload any) {
 }
 
 func RespondWithError(w http.ResponseWriter, err error) {
+	red := "\033[31m"
+	orange := "\033[38;5;208m"
+	reset := "\033[0m"
 
-	// Error HTTP
 	if appErr, ok := err.(*globalerrors.AppError); ok {
+		log.Printf("%s[infrastructure]%s %s%s | %s", red, reset, appErr.Title, reset, appErr.Message)
+		if appErr.Err != nil {
+			log.Printf("  %scause:%s %v", red, reset, appErr.Err)
+		}
 		RespondWithJSON(w, appErr.Status, map[string]any{
 			"title":   appErr.Title,
 			"message": appErr.Message,
@@ -26,22 +33,19 @@ func RespondWithError(w http.ResponseWriter, err error) {
 		return
 	}
 
-	// Error de dominio
 	if domainErr, ok := err.(*commondomainerrors.DomainError); ok {
-
 		appErr := MapDomainError(domainErr)
-
+		log.Printf("%s[domain]%s %s%s | %s", orange, reset, appErr.Title, reset, appErr.Message)
 		RespondWithJSON(w, appErr.Status, map[string]any{
 			"title":   appErr.Title,
 			"message": appErr.Message,
 			"status":  appErr.Status,
-			"field":   domainErr.Field, // opcional
+			"field":   domainErr.Field,
 		})
-
 		return
 	}
 
-	// Error inesperado
+	log.Printf("%s[unexpected]%s %v", red, reset, err)
 	RespondWithJSON(w, http.StatusInternalServerError, map[string]any{
 		"title":   "Internal Server Error",
 		"message": "An unexpected error occurred",
