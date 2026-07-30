@@ -1,10 +1,13 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:15-alpine
-    container_name: moneka_db
+    container_name: monekai_db
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 2s
+      retries: 10
+      start_period: 10s
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -13,15 +16,16 @@ services:
       - "${DB_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
- 
+
   app:
     build:
       context: .
-      dockerfile: Dockerfile.dev
-    container_name: moneka_app
+      dockerfile: Dockerfile
+    container_name: monekai_app
     restart: on-failure
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "8080:8080"
     environment:
@@ -29,33 +33,32 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
-      - DB_PORT=${DB_PORT}
+      - DB_PORT=5432 # Siempre 5432 para la red interna de Docker
       - DB_SSLMODE=${DB_SSLMODE}
       - JWT_SECRET=${JWT_SECRET}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - REPLICATE_KEY=${REPLICATE_KEY}
       - REPLICATE_WEBHOOK_SECRET=${REPLICATE_WEBHOOK_SECRET}
-      - BACKED_SERVER_URL=${BACKED_SERVER_URL}
+      - BACKEND_SERVER_URL=${BACKEND_SERVER_URL}
       - R2_ACCOUNT_ID=${R2_ACCOUNT_ID}
       - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
       - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
       - R2_BUCKET_NAME=${R2_BUCKET_NAME}
       - R2_PUBLIC_URL=${R2_PUBLIC_URL}
       - ENVIRONMENT=${ENVIRONMENT}
-      - BACKEND_SERVER_URL=${BACKEND_SERVER_URL}
 
   ngrok:
     image: ngrok/ngrok:latest
-    container_name: moneka_ngrok
+    container_name: monekai_ngrok
     restart: unless-stopped
     command:
       - "http"
-      - "app:8080" # <-- Apunta al servicio de Go (app) y su puerto interno
+      - "app:8080"
     environment:
-      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN} # <-- Lo manejamos desde tu archivo .env
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
     ports:
-      - "4040:4040" # Panel web local para interceptar, inspeccionar y repetir webhooks
+      - "4040:4040"
     depends_on:
       - app
 

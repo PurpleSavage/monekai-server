@@ -1,16 +1,38 @@
 package connection
 
 import (
+	"fmt"
+	"log"
+	"time"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"time"
 )
 
-// NewClient inicializa la conexión a GORM de forma genérica
+// NewClient inicializa la conexión a GORM con reintentos (útil para docker-compose)
 func NewClient(dsn string) (*gorm.DB, error) {
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	var db *gorm.DB
+	var err error
+
+	maxRetries := 10
+	baseDelay := time.Second
+
+	for i := range maxRetries {
+		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		if err == nil {
+			break
+		}
+
+		delay := baseDelay * (1 << i)
+		log.Printf(
+			"Intento %d/%d: no se pudo conectar a la base de datos. Reintentando en %v...",
+			i+1, maxRetries, delay,
+		)
+		time.Sleep(delay)
+	}
+
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("no se pudo conectar a la base de datos después de %d intentos: %w", maxRetries, err)
 	}
 
 	// Configuración del pool de conexiones
