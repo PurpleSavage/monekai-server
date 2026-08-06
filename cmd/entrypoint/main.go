@@ -1,5 +1,4 @@
 package main
-
 import (
 	"fmt"
 	"log"
@@ -18,12 +17,17 @@ import (
 	"github.com/PurpleSavage/monekai-server/modules/shared/common/config"
 	commoninadapters "github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/in-adapters"
 	commonmiddlewares "github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/middlewares"
+	commonservices "github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/services"
 	"github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/validators"
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/cors"
 )
+
 func main() {
 	r := chi.NewRouter()
+	store := commonservices.NewIPStore()
+	throttler := commonmiddlewares.NewThrotlerRequest()
+	
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:4200"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -39,6 +43,11 @@ func main() {
 
 	logger:=commonmiddlewares.NewLoggerMiddleware()
 	r.Use(logger.Log)
+	
+	r.Use(func(next http.Handler) http.Handler {
+		return throttler.RateLimit(store, next)
+	})
+
 	
 	config.LoadEnvs()
 	dsn := fmt.Sprintf(
