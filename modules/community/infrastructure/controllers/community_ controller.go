@@ -102,7 +102,8 @@ func (nc *CommunityController) DownloadSample(w http.ResponseWriter, r *http.Req
 		commoninfrastructuremappers.RespondWithError(w,err)
 		return
 	}
-	commoninfrastructuremappers.RespondWithJSON(w, http.StatusOK, response)
+	dto:=communityinfrastructuremappers.ToSampleDownloadResponseDTO(response)
+	commoninfrastructuremappers.RespondWithJSON(w, http.StatusOK, dto)
 }
 
 func CommunityMapRoutes(nc *CommunityController) chi.Router{ 
