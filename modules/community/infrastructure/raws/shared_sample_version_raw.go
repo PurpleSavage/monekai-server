@@ -26,5 +26,5 @@ type SharedSampleVersionRaw struct {
 	// Info unida de User (Haciendo match con los alias AS del SELECT)
 	UserEmail       string     `gorm:"column:user_email" json:"userEmail"`
 	UserID          uuid.UUID  `gorm:"column:user_id" json:"userId"`
-	UserName        string     `gorm:"column:user_name" json:"name"`
+
 }

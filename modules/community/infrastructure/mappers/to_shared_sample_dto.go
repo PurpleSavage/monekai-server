@@ -22,7 +22,6 @@ func BuildListSharedSamplesResponseDTO(samples []communityentities.SharedSample)
 			},
 			SharedBy: communityresponsesdtos.SharedByDTO{
 				ID:    sample.SharedBy.ID, // Se convertirá en "userId" en el JSON
-				Name:  sample.SharedBy.Name,
 				Email: sample.SharedBy.Email,
 			},
 		}

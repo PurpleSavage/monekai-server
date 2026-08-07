@@ -27,7 +27,6 @@ func MapToSharedSamplesDomain(rawDetails []communityraws.SharedSampleDetailRaw) 
 			},
 			SharedBy: communityentities.SharedBy{
 				ID:    raw.UserID,
-				Name:  raw.UserName,
 				Email: raw.UserEmail,
 			},
 		}

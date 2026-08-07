@@ -23,7 +23,6 @@ func BuildListSharedSampleVersionsResponse(versions []communityentities.SharedSa
 			},
 			SharedBy: communityresponsesdtos.SharedByDTO{
 				ID:    version.SharedBy.ID,   // Se expone como "userId" en el JSON
-				Name:  version.SharedBy.Name,
 				Email: version.SharedBy.Email,
 			},
 		}

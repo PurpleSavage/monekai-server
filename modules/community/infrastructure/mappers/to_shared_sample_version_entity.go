@@ -21,7 +21,7 @@ func MapToSharedSampleVersionsDomain(rawVersions []communityraws.SharedSampleVer
 			// Mapeo estructurado para el creador
 			SharedBy: communityentities.SharedBy{
 				ID:    raw.UserID,
-				Name:  raw.UserName,
+
 				Email: raw.UserEmail,
 			},
 			

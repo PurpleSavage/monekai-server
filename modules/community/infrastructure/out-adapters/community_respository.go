@@ -53,7 +53,6 @@ func (r *CommunityRepository) ListSharedSamples(
 				
 				users.email AS user_email,
 				shared_samples.user_id AS user_id,
-				users.name AS user_name
 			`).
 			Joins("INNER JOIN samples ON samples.id = shared_samples.sample_id").
 			Joins("INNER JOIN users ON users.id = shared_samples.user_id").
@@ -96,7 +95,6 @@ func (r *CommunityRepository) ListSharedSamplesVersion(
 			samples.prompt,
 			users.email AS user_email,
 			shared_samples.user_id AS user_id,
-			users.name AS user_name
 		`).
 		Joins("INNER JOIN sample_versions ON sample_versions.id = shared_samples.sample_version_id").
 		Joins("INNER JOIN samples ON samples.id = sample_versions.sample_id").
