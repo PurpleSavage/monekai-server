@@ -157,17 +157,16 @@ func (c *NotificationsController) MarkNotificationAsRead(w http.ResponseWriter, 
 		return
 	}
 
-	var body notificationsrequestsdtos.MarkNotificationAsReadDTO
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+	notificationID := chi.URLParam(r, "id")
+	if notificationID == "" {
 		commoninfrastructuremappers.RespondWithError(
 			w,
-			globalerrors.NewAppError(http.StatusBadRequest, "Bad Request", "Invalid JSON body", err),
+			globalerrors.NewAppError(http.StatusBadRequest, "Bad Request", "Notification ID is required", nil),
 		)
 		return
 	}
-	defer r.Body.Close()
 
-	uuidValid, err := authvalueobjects.NewUUIDVO(body.NotificationId)
+	uuidValid, err := authvalueobjects.NewUUIDVO(notificationID)
 	if err != nil {
 		commoninfrastructuremappers.RespondWithError(w, err)
 		return
