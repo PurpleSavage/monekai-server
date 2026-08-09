@@ -66,6 +66,28 @@ func (r *CommunityRepository) ListSharedSamples(
 		}
 	return communityinfrastructuremappers.MapToSharedSamplesDomain(dbSharedSamplesDetails), nil
 }
+
+// cuenta el total de samples compartidos (aquellos con sample_id)
+func (r *CommunityRepository) CountTotalSharedSamples(
+	ctx context.Context,
+) (int, error) {
+	var count int64
+	err := r.db.WithContext(ctx).
+		Model(&models.SharedSample{}).
+		Where("sample_id IS NOT NULL").
+		Count(&count).Error
+
+	if err != nil {
+		return 0, globalerrors.NewAppError(
+			500,
+			"Database Error",
+			"Error counting total shared samples",
+			err,
+		)
+	}
+	return int(count), nil
+}
+
 //función para listar los samples comaprtidos pero por verssion --> un sample compartido con verssion es un sample con efectos aplicados
 func (r *CommunityRepository) ListSharedSamplesVersion(
 	ctx context.Context,
@@ -109,6 +131,27 @@ func (r *CommunityRepository) ListSharedSamplesVersion(
 	}
 
 	return communityinfrastructuremappers.MapToSharedSampleVersionsDomain(dbSharedVersions), nil
+}
+
+// cuenta el total de samples compartidos con versión (sample_version_id)
+func (r *CommunityRepository) CountTotalSharedSampleVersions(
+	ctx context.Context,
+) (int, error) {
+	var count int64
+	err := r.db.WithContext(ctx).
+		Model(&models.SharedSample{}).
+		Where("sample_version_id IS NOT NULL").
+		Count(&count).Error
+
+	if err != nil {
+		return 0, globalerrors.NewAppError(
+			500,
+			"Database Error",
+			"Error counting total shared sample versions",
+			err,
+		)
+	}
+	return int(count), nil
 }
 
 func (r *CommunityRepository) LikeToSharedSample(

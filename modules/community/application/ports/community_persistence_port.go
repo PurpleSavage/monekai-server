@@ -15,12 +15,20 @@ type CommunityPersistencePort interface {
 		page int,
 		limit int,
 	) ([]communityentities.SharedSample, error)
+
+	CountTotalSharedSamples(
+		ctx context.Context,
+	) (int, error)
 	
 	ListSharedSamplesVersion(
 		ctx context.Context,
 		page int,
 		limit int,
 	) ([]communityentities.SharedSampleVersion, error)
+
+	CountTotalSharedSampleVersions(
+		ctx context.Context,
+	) (int, error)
 
 	LikeToSharedSample(
 		ctx context.Context,

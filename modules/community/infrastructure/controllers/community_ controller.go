@@ -3,10 +3,12 @@ package communitycontrollers
 import (
 	"net/http"
 
+	communityresponsesdtos "github.com/PurpleSavage/monekai-server/modules/community/application/dtos/responses"
 	communityusecases "github.com/PurpleSavage/monekai-server/modules/community/application/usecases"
 	communityinfrastructuremappers "github.com/PurpleSavage/monekai-server/modules/community/infrastructure/mappers"
 	authvalueobjects "github.com/PurpleSavage/monekai-server/modules/shared/auth/domain/valueobjects"
 	authmiddlewares "github.com/PurpleSavage/monekai-server/modules/shared/auth/infrastructure/middlewares"
+	commonresponsesdtos "github.com/PurpleSavage/monekai-server/modules/shared/common/application/dtos/responses"
 	commonvalueobjects "github.com/PurpleSavage/monekai-server/modules/shared/common/domain/valueobjects"
 	commoninfrastructuremappers "github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/mappers"
 	"github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/validators"
@@ -49,11 +51,15 @@ func (nc *CommunityController) ListSharedSamples(w http.ResponseWriter, r *http.
 	}
 	response,error:= nc.listSharedSamples.Execute(r.Context(), paginationVO.Page, paginationVO.Limit)
 	if error != nil {
-		http.Error(w, error.Error(), http.StatusInternalServerError)
+		commoninfrastructuremappers.RespondWithError(w, error)
 		return
 	}
-	responseDTO:=communityinfrastructuremappers.BuildListSharedSamplesResponseDTO(response)
-	
+	responseDTO := commonresponsesdtos.PaginatedResponse[communityresponsesdtos.SharedSampleItemDTO]{
+		Total: response.Total,
+		Limit: response.Limit,
+		Page:  response.Page,
+		Data:  communityinfrastructuremappers.BuildListSharedSamplesResponseDTO(response.Data),
+	}
 	commoninfrastructuremappers.RespondWithJSON(w, http.StatusOK, responseDTO)
 }
 
@@ -67,10 +73,15 @@ func (nc *CommunityController) ListSharedEditSamples(w http.ResponseWriter, r *h
 	}
 	response,error:= nc.listSharedSamplesVersion.Execute(r.Context(), paginationVO.Page, paginationVO.Limit)
 	if error != nil {
-		http.Error(w, error.Error(), http.StatusInternalServerError)
+		commoninfrastructuremappers.RespondWithError(w, error)
 		return
 	}
-	responseDTO:=communityinfrastructuremappers.BuildListSharedSampleVersionsResponse(response)
+	responseDTO := commonresponsesdtos.PaginatedResponse[communityresponsesdtos.SharedSampleVersionItemDTO]{
+		Total: response.Total,
+		Limit: response.Limit,
+		Page:  response.Page,
+		Data:  communityinfrastructuremappers.BuildListSharedSampleVersionsResponse(response.Data),
+	}
 	commoninfrastructuremappers.RespondWithJSON(w, http.StatusOK, responseDTO)
 }
 
