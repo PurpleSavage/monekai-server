@@ -3,7 +3,7 @@ package communityraws
 import (
 	"time"
 
-	communityvalueobjects "github.com/PurpleSavage/monekai-server/modules/community/domain/valueobjects"
+	commonvalueobjects "github.com/PurpleSavage/monekai-server/modules/shared/common/domain/valueobjects"
 	"github.com/google/uuid"
 )
 
@@ -16,7 +16,7 @@ type SharedSampleVersionRaw struct {
 
 	// Info unida de SampleVersion (Se mapea automáticamente con sql.Scanner)
 	SampleVersionID uuid.UUID `gorm:"column:sample_version_id" json:"sampleVersionId"`
-	Effects         communityvalueobjects.EffectsVO `gorm:"column:effects" json:"effects"`
+	Effects         commonvalueobjects.EffectsVO `gorm:"column:effects" json:"effects"`
 	FinalAudioURL   string     `gorm:"column:final_audio_url" json:"finalAudioUrl"`
 	
 	// Info unida de Sample (Vía alias o Join directo)

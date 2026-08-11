@@ -1,4 +1,4 @@
-package communityvalueobjects
+package commonvalueobjects
 
 import commondomainerrors "github.com/PurpleSavage/monekai-server/modules/shared/common/domain/errors"
 

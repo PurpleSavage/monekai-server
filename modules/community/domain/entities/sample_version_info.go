@@ -1,14 +1,14 @@
 package communityentities
 
 import (
-	communityvalueobjects "github.com/PurpleSavage/monekai-server/modules/community/domain/valueobjects"
+	commonvalueobjects "github.com/PurpleSavage/monekai-server/modules/shared/common/domain/valueobjects"
 	"github.com/google/uuid"
 )
 
 
 type SampleVersionInfo struct {
 	ID        uuid.UUID
-	Effects   communityvalueobjects.EffectsVO
+	Effects   commonvalueobjects.EffectsVO
 	FinalAudioURL string
 	SampleName string
 	Prompt string
