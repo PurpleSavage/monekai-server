@@ -1,6 +1,11 @@
 package commonvalueobjects
 
-import commondomainerrors "github.com/PurpleSavage/monekai-server/modules/shared/common/domain/errors"
+import (
+	"encoding/json"
+
+	commondomainerrors "github.com/PurpleSavage/monekai-server/modules/shared/common/domain/errors"
+	"gorm.io/datatypes"
+)
 
 // -------------------------
 // RANGOS VÁLIDOS
@@ -28,93 +33,102 @@ const (
 	maxGain = 0
 )
 
+// Struct con punteros para representar campos opcionales (pueden ser nil)
 type EffectsVO struct {
-	Reverb     int
-	SlowPitch  int
-	Saturation int
-	Delay      int
-	LowPass    int
-	HighPass   int
-	Gain       int
-	Reverse    bool
+	Reverb     *int
+	SlowPitch  *int
+	Saturation *int
+	Delay      *int
+	LowPass    *int
+	HighPass   *int
+	Gain       *int
+	Reverse    *bool
 }
 
 // -------------------------
 // CONSTRUCTOR CON VALIDACIÓN
 // -------------------------
 func CreateEffectsVO(
-	Reverb int,
-	SlowPitch int,
-	Saturation int,
-	Delay int,
-	LowPass int,
-	HighPass int,
-	Gain int,
-	Reverse bool,
+	Reverb *int,
+	SlowPitch *int,
+	Saturation *int,
+	Delay *int,
+	LowPass *int,
+	HighPass *int,
+	Gain *int,
+	Reverse *bool,
 ) (*EffectsVO, error) {
+
 	// -------------------------
 	// Reverb VALIDATION
 	// -------------------------
-	if Reverb < minReverb || Reverb> maxReverb {
+	if Reverb != nil && (*Reverb < minReverb || *Reverb > maxReverb) {
 		return nil, commondomainerrors.NewValidationError(
 			"reverb",
 			"reverb must be between 0 and 100",
 		)
 	}
+
 	// -------------------------
 	// SLOW PITCH VALIDATION
 	// -------------------------
-	if SlowPitch < minSlowPitch || SlowPitch > maxSlowPitch {
+	if SlowPitch != nil && (*SlowPitch < minSlowPitch || *SlowPitch > maxSlowPitch) {
 		return nil, commondomainerrors.NewValidationError(
 			"slowPitch",
 			"slowPitch must be between -12 and 0",
 		)
 	}
+
 	// -------------------------
 	// SATURATION VALIDATION
 	// -------------------------
-	if Saturation < minSaturation || Saturation > maxSaturation {
+	if Saturation != nil && (*Saturation < minSaturation || *Saturation > maxSaturation) {
 		return nil, commondomainerrors.NewValidationError(
 			"saturation",
 			"saturation must be between 0 and 100",
 		)
 	}
+
 	// -------------------------
 	// DELAY VALIDATION
 	// -------------------------
-	if Delay < minDelay || Delay > maxDelay {
+	if Delay != nil && (*Delay < minDelay || *Delay > maxDelay) {
 		return nil, commondomainerrors.NewValidationError(
 			"delay",
 			"delay must be between 0 and 30",
 		)
 	}
+
 	// -------------------------
 	// LOW PASS VALIDATION
 	// -------------------------
-	if LowPass < minLowPass || LowPass > maxLowPass {
+	if LowPass != nil && (*LowPass < minLowPass || *LowPass > maxLowPass) {
 		return nil, commondomainerrors.NewValidationError(
 			"lowPass",
 			"lowPass must be between 12500 and 20000",
 		)
 	}
+
 	// -------------------------
 	// HIGH PASS VALIDATION
 	// -------------------------
-	if HighPass < minHighPass || HighPass > maxHighPass {
+	if HighPass != nil && (*HighPass < minHighPass || *HighPass > maxHighPass) {
 		return nil, commondomainerrors.NewValidationError(
 			"highPass",
 			"highPass must be between 0 and 40",
 		)
 	}
+
 	// -------------------------
 	// GAIN VALIDATION
 	// -------------------------
-	if Gain < minGain || Gain > maxGain {
+	if Gain != nil && (*Gain < minGain || *Gain > maxGain) {
 		return nil, commondomainerrors.NewValidationError(
 			"gain",
 			"gain must be between -3 and 0",
 		)
 	}
+
 	// -------------------------
 	// CREATE VO
 	// -------------------------
@@ -128,5 +142,15 @@ func CreateEffectsVO(
 		Gain:       Gain,
 		Reverse:    Reverse,
 	}
+
 	return vo, nil
+}
+
+func (e *EffectsVO) GetEffectsToJSON() (datatypes.JSON, error) {
+	bytes, err := json.Marshal(e)
+	if err != nil {
+		return nil, err
+	}
+	
+	return datatypes.JSON(bytes), nil
 }
