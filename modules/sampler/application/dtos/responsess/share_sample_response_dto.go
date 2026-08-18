@@ -1,4 +1,5 @@
 package samplerresponsessdtos
+
 type ShareSampleResponseDTO struct {
 	Id              string  `json:"id"`
 	SampleId        *string `json:"sampleId,omitempty"`        // omitempty por si viene nil

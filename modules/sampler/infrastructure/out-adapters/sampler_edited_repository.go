@@ -183,6 +183,24 @@ func (s *SamplerEditedRepository) UpdateEffectsEditedSample(id string, vo common
 	return true, nil
 }
 
+func (s *SamplerEditedRepository) CountTotalEditedSamples(ctx context.Context, userID string) (int, error) {
+	var count int64
+	err := s.db.WithContext(ctx).
+		Table("sample_versions").
+		Joins("INNER JOIN samples s ON s.id = sample_versions.sample_id").
+		Where("s.user_id = ?", userID).
+		Count(&count).Error
+	if err != nil {
+		return 0, globalerrors.NewAppError(
+			500,
+			"Database Error",
+			"Error retrieving total edited samples count",
+			err,
+		)
+	}
+	return int(count), nil
+}
+
 func mergeEffects(existingJSON datatypes.JSON, incoming commonvalueobjects.EffectsVO) (*commonvalueobjects.EffectsVO, error) {
 	merged := commonvalueobjects.EffectsVO{}
 	if len(existingJSON) > 0 && string(existingJSON) != "null" {

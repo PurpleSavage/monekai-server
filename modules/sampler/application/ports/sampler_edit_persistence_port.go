@@ -15,4 +15,5 @@ type SamplerEditedPersistencePort interface {
 	UpdateURLEditedSample(id string, url string) (bool, error)
 	UpdateEffectsEditedSample(id string, vo commonvalueobjects.EffectsVO) (bool, error)
 	ListSamplesEditedByUsertID(ctx context.Context, userID string, page int, limit int) ([]*samplerentities.EditedSampleEntity, error)
+	CountTotalEditedSamples(ctx context.Context, userID string) (int, error)
 }

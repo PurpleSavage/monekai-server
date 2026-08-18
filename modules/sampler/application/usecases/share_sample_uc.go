@@ -14,24 +14,24 @@ func NewShareSampleUseCase(
 	audioRepository samplerports.SamplerPersistencePort,
 ) *ShareSampleUseCase {
 	return &ShareSampleUseCase{
-		audioRepository:audioRepository,
+		audioRepository: audioRepository,
 	}
 }
 
-func (s *ShareSampleUseCase) Execute(sampleID string,userID string)(*samplerentities.ShareSampleEntity, error) {
-	vo,err:=samplervalueobjects.CreateSaveSharedSampleVO(
+func (s *ShareSampleUseCase) Execute(sampleID string, userID string) (*samplerentities.ShareSampleEntity, error) {
+	vo, err := samplervalueobjects.CreateSaveSharedSampleVO(
 		sampleID,
-		userID,	
-		nil,	
+		userID,
+		nil,
 		nil,
 	)
 	if err != nil {
-		
-		return nil,err
+
+		return nil, err
 	}
-	response,err:= s.audioRepository.SaveSharedSample(*vo)
+	response, err := s.audioRepository.SaveSharedSample(*vo)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	return response,nil
+	return response, nil
 }

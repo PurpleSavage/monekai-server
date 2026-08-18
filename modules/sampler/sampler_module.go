@@ -13,33 +13,40 @@ import (
 	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm"
 )
+
 func SamplerBootstrap(
 	db *gorm.DB,
 	ob commonports.ObserverBucketPort,
 	v *validators.DTOValidator,
- 	authmiddleware *authmiddlewares.AuthMiddleware,
-  
-) chi.Router{
+	authmiddleware *authmiddlewares.AuthMiddleware,
+
+) chi.Router {
 
 	//adapterts
-	storageService:=commonoutadapters.NewCloudFlareAdapterService()
-	songService,_:=sampleroutadapters.NewReplicateAdapterService()
-	samplerRepo:=sampleroutadapters.NewSamplerrepository(db)
-	checkerCreditsService:= commonoutadapters.NewCheckerCreditsAdapter(db)
+	storageService := commonoutadapters.NewCloudFlareAdapterService()
+	songService, _ := sampleroutadapters.NewReplicateAdapterService()
+	samplerRepo := sampleroutadapters.NewSamplerrepository(db)
+	samplerEditedRepo := sampleroutadapters.NewSamplerEditedRepository(*db)
+	checkerCreditsService := commonoutadapters.NewCheckerCreditsAdapter(db)
 
 	// use cases
-	generateSampleUC:=samplerusecases.NewGeneratorSampleUseCase(songService,samplerRepo)
-	updateUrlSampleUC:=samplerusecases.NewUpdateUrlSampleGenerated(samplerRepo,storageService)
-	listSamplesUC:= samplerusecases.NewListSampleUseCase(samplerRepo)
-	shareSampleUC:=samplerusecases.NewShareSampleUseCase(samplerRepo)
-	findSampleByPredictionUC:=samplerusecases.NewFindSampleByPredictionUC(samplerRepo)
+	generateSampleUC := samplerusecases.NewGeneratorSampleUseCase(songService, samplerRepo)
+	updateUrlSampleUC := samplerusecases.NewUpdateUrlSampleGenerated(samplerRepo, storageService)
+	listSamplesUC := samplerusecases.NewListSampleUseCase(samplerRepo)
+	shareSampleUC := samplerusecases.NewShareSampleUseCase(samplerRepo)
+	findSampleByPredictionUC := samplerusecases.NewFindSampleByPredictionUC(samplerRepo)
+
+	saveEditedSampleUC := samplerusecases.NewSaveEditedSampleUC(samplerEditedRepo)
+	getEditedSampleByIDUC := samplerusecases.NewGetEditedSampleByIDUC(samplerEditedRepo)
+	updateURLEditedSampleUC := samplerusecases.NewUpdateURLEditedSampleUC(samplerEditedRepo)
+	updateEffectsEditedSampleUC := samplerusecases.NewUpdateEffectsEditedSampleUC(samplerEditedRepo)
+	listEditedSamplesUC := samplerusecases.NewListEditedSamplesUC(samplerEditedRepo)
 
 	// middlewaress
-	// middlewares 
+	// middlewares
 	replicateMiddleware := samplermiddlewares.NewReplicateMiddlewareWebhook()
 	creditsMiddleware := commonmiddlewares.NewCheckCreditsMiddleware(checkerCreditsService)
 
-	
 	controller := samplercontroller.NewSamplerController(
 		creditsMiddleware,
 		authmiddleware,
@@ -52,5 +59,16 @@ func SamplerBootstrap(
 		findSampleByPredictionUC,
 		ob,
 	)
-	return samplercontroller.SamplerMapRoutes(controller)
+	editedController := samplercontroller.NewSamplerEditedController(
+		v,
+		authmiddleware,
+		saveEditedSampleUC,
+		getEditedSampleByIDUC,
+		updateURLEditedSampleUC,
+		updateEffectsEditedSampleUC,
+		listEditedSamplesUC,
+	)
+	router := samplercontroller.SamplerMapRoutes(controller)
+	router.Mount("/", samplercontroller.SamplerEditedMapRoutes(editedController))
+	return router
 }

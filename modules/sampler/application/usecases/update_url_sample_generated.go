@@ -12,7 +12,7 @@ import (
 
 type UpdateUrlSampleGenerated struct {
 	audioPersistenceService samplerports.SamplerPersistencePort
-	storageService commonports.StoragePort
+	storageService          commonports.StoragePort
 }
 
 func NewUpdateUrlSampleGenerated(
@@ -21,28 +21,28 @@ func NewUpdateUrlSampleGenerated(
 
 ) *UpdateUrlSampleGenerated {
 	return &UpdateUrlSampleGenerated{
-		audioPersistenceService:audioPersistenceService,
-		storageService:storageService,
+		audioPersistenceService: audioPersistenceService,
+		storageService:          storageService,
 	}
 }
 
 func (u *UpdateUrlSampleGenerated) Execute(
 	data samplerequestsdto.SongWebhookResponse,
 ) (*samplervalueobjects.ResponseUpdateurlVo, error) {
-	
+
 	// 1. Descargar el audio temporal desde Replicate
-	ioReader,size, err := commonservices.DownloadFile(data.Output)
+	ioReader, size, err := commonservices.DownloadFile(data.Output)
 	if err != nil {
-		return nil, err 
+		return nil, err
 	}
 	defer ioReader.Close()
 
 	// 2. Generar un nombre único y seguro para el bucket (evita el bug de caracteres raros o espacios de la UI)
-	name := fmt.Sprintf("%s.mp3", uuid.NewString()) 
+	name := fmt.Sprintf("%s.mp3", uuid.NewString())
 	path := fmt.Sprintf("samples/%s", name)
 
 	// 3. Subir el archivo a tu servicio de Storage
-	url, err := u.storageService.UploadFile(path, ioReader,size, "audio/mpeg")
+	url, err := u.storageService.UploadFile(path, ioReader, size, "audio/mpeg")
 	if err != nil {
 		return nil, err
 	}
