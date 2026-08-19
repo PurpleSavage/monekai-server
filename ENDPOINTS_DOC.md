@@ -149,6 +149,145 @@ Comparte un sample en la comunidad.
 
 ---
 
+### `POST /audio/edit-samples`
+Guarda una nueva versión editada de un sample (con efectos y URL final del audio).
+
+- **Auth:** Header `Authorization: Bearer <accessToken>` (AccessToken)
+- **Body (JSON):**
+  ```json
+  {
+    "sampleId": "uuid (requerido)",
+    "effects": { 
+      "reverb": "int | null",
+      "slowPitch": "int | null",
+      "saturation": "int | null",
+      "delay": "int | null",
+      "lowPass": "int | null",
+      "highPass": "int | null",
+      "gain": "int | null",
+      "reverse": "bool | null"
+    },
+    "finalAudioUrl": "string (requerido, URL válida)"
+  }
+  ```
+- **Response (201):**
+  ```json
+  {
+    "id": "uuid"
+  }
+  ```
+
+---
+
+### `GET /audio/edit-samples`
+Lista las versiones editadas del usuario autenticado (con paginación).
+
+- **Auth:** Header `Authorization: Bearer <accessToken>` (AccessToken)
+- **Query Params:**
+  - `page` (int, requerido)
+  - `limit` (int, requerido)
+- **Response (200):** `PaginatedResponse<EditedSampleResponseDTO>`
+  ```json
+  {
+    "total": "int",
+    "limit": "int",
+    "page": "int",
+    "data": [
+      {
+        "id": "uuid",
+        "sample": {
+          "id": "uuid",
+          "sampleName": "string",
+          "prompt": "string",
+          "audioUrl": "string | null",
+          "duration": "int",
+          "outputFormat": "mp3 | wav",
+          "modelVersion": "string",
+          "status": "starting | processing | succeeded | failed | canceled",
+          "createdAt": "string"
+        },
+        "effects": {
+          "reverb": "int | null",
+          "slowPitch": "int | null",
+          "saturation": "int | null",
+          "delay": "int | null",
+          "lowPass": "int | null",
+          "highPass": "int | null",
+          "gain": "int | null",
+          "reverse": "bool | null"
+        },
+        "finalAudioUrl": "string",
+        "createdAt": "string"
+      }
+    ]
+  }
+  ```
+
+---
+
+### `GET /audio/edit-samples/{id}`
+Obtiene una versión editada de un sample por su ID.
+
+- **Auth:** Header `Authorization: Bearer <accessToken>` (AccessToken)
+- **Path Param:**
+  - `id` (uuid, requerido — ID de la versión editada)
+- **Response (200):** `EditedSampleResponseDTO`
+  ```json
+  {
+    "id": "uuid",
+    "sample": { "id": "uuid", "sampleName": "string", "prompt": "string", "audioUrl": "string | null", "duration": "int", "outputFormat": "mp3 | wav", "modelVersion": "string", "status": "string", "createdAt": "string" },
+    "effects": { "reverb": "int | null", "slowPitch": "int | null", "saturation": "int | null", "delay": "int | null", "lowPass": "int | null", "highPass": "int | null", "gain": "int | null", "reverse": "bool | null" },
+    "finalAudioUrl": "string",
+    "createdAt": "string"
+  }
+  ```
+- **Error (404):** No existe una versión editada con ese ID.
+
+---
+
+### `PATCH /audio/edit-samples/{id}/url`
+Actualiza la URL final del audio de una versión editada.
+
+- **Auth:** Header `Authorization: Bearer <accessToken>` (AccessToken)
+- **Path Param:**
+  - `id` (uuid, requerido — ID de la versión editada)
+- **Body (JSON):**
+  ```json
+  {
+    "finalAudioUrl": "string (requerido, URL válida)"
+  }
+  ```
+- **Response (200):**
+  ```json
+  {
+    "updated": true
+  }
+  ```
+
+---
+
+### `PATCH /audio/edit-samples/{id}/effects`
+Actualiza parcialmente los efectos de una versión editada. Solo se sobreescriben los efectos enviados; los campos omitidos conservan su valor guardado.
+
+- **Auth:** Header `Authorization: Bearer <accessToken>` (AccessToken)
+- **Path Param:**
+  - `id` (uuid, requerido — ID de la versión editada)
+- **Body (JSON):** Los efectos a actualizar (parcial)
+  ```json
+  {
+    "reverb": 30,
+    "gain": -1
+  }
+  ```
+- **Response (200):**
+  ```json
+  {
+    "updated": true
+  }
+  ```
+
+---
+
 ### `POST /audio/webhook/songs`
 Webhook de Replicate. Recibe la respuesta de la generación de audio.
 
