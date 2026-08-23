@@ -187,3 +187,77 @@ func (r *CommunityRepository) DownloadToSharedSample(
 	}
 	return communityvalueobjects.NewDownloadSharedSampleVO(sharedSampleModel.ID, sharedSampleModel.Downloads), nil
 }
+
+func (r *CommunityRepository)GetLatestSharedEffectSamples(
+	ctx context.Context,
+	limit int,
+)([]communityentities.SharedSampleVersion, error){
+	if limit <= 0 {
+		limit = 15
+	}
+	var dbSharedVersions []communityraws.SharedSampleVersionRaw
+	err := r.db.WithContext(ctx).Model(&models.SharedSample{}).
+		Select(`
+			shared_samples.id,
+			shared_samples.likes,
+			shared_samples.downloads,
+			shared_samples.created_at,
+			shared_samples.sample_version_id,
+			sample_versions.effects,
+			sample_versions.final_audio_url,
+			samples.sample_name,
+			samples.prompt,
+			users.email AS user_email,
+			shared_samples.user_id AS user_id,
+		`).
+		Joins("INNER JOIN sample_versions ON sample_versions.id = shared_samples.sample_version_id").
+		Joins("INNER JOIN samples ON samples.id = sample_versions.sample_id").
+		Joins("INNER JOIN users ON users.id = shared_samples.user_id").
+		Order("shared_samples.created_at DESC").
+		Limit(limit).
+		Scan(&dbSharedVersions).Error
+
+	if err != nil {
+		return nil, globalerrors.NewAppError(500, "Failed to list latest shared sample versions", err.Error(), nil)
+	}
+
+	return communityinfrastructuremappers.MapToSharedSampleVersionsDomain(dbSharedVersions), nil
+}
+
+
+func (r *CommunityRepository)GetLatestSharedSamples(
+	ctx context.Context,
+	limit int,
+)([]communityentities.SharedSample, error) {
+	if limit <= 0 {
+		limit = 15
+	}
+	var dbSharedSamplesDetails []communityraws.SharedSampleDetailRaw
+	err := r.db.WithContext(ctx).Model(&models.SharedSample{}).
+			Select(`
+				shared_samples.id,
+				shared_samples.sample_id,
+				shared_samples.sample_version_id,
+				shared_samples.likes,
+				shared_samples.downloads,
+				shared_samples.created_at,
+				
+				samples.sample_name,
+				samples.initial_audio_url,
+				samples.prompt,
+				samples.duration,
+				
+				users.email AS user_email,
+				shared_samples.user_id AS user_id,
+			`).
+			Joins("INNER JOIN samples ON samples.id = shared_samples.sample_id").
+			Joins("INNER JOIN users ON users.id = shared_samples.user_id").
+			Order("shared_samples.created_at DESC").
+			Limit(limit).
+			Scan(&dbSharedSamplesDetails).Error
+
+		if err != nil {
+			return nil, globalerrors.NewAppError(500, "Failed to list latest shared samples", err.Error(), err)
+		}
+	return communityinfrastructuremappers.MapToSharedSamplesDomain(dbSharedSamplesDetails), nil
+}

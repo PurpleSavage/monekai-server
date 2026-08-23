@@ -39,4 +39,14 @@ type CommunityPersistencePort interface {
 		ctx context.Context,
 		sampleID uuid.UUID,
 	) (*communityvalueobjects.DownloadSharedSampleVO, error)
+
+	GetLatestSharedEffectSamples(
+		ctx context.Context,
+		limit int,
+	)([]communityentities.SharedSampleVersion, error)
+
+	GetLatestSharedSamples(
+		ctx context.Context,
+		limit int,
+	)([]communityentities.SharedSample, error) 
 }
