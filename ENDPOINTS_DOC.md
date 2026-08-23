@@ -368,6 +368,84 @@ Lista samples compartidos con versiones editadas.
 
 ---
 
+### `GET /community/latest-samples`
+Lista los últimos 15 samples originales compartidos (ordenados por fecha de publicación, descendente). Respuesta cacheada en memoria (TTL 3000s).
+
+- **Auth:** Header `Authorization: Bearer <accessToken>` (AccessToken)
+- **Query Params:**
+  - `limit` (int, requerido, min 1, max 15 — debe ser un entero válido)
+- **Response (200):** `PaginatedResponse<SharedSampleItemDTO>`
+  ```json
+  {
+    "total": "int",
+    "limit": "int",
+    "page": "int",
+    "data": [
+      {
+        "id": "uuid",
+        "likes": "int",
+        "downloads": "int",
+        "createdAt": "string",
+        "sample": {
+          "id": "uuid",
+          "sampleName": "string",
+          "initialAudioUrl": "string",
+          "prompt": "string",
+          "duration": "int"
+        },
+        "sharedBy": {
+          "userId": "uuid",
+          "name": "string",
+          "email": "string"
+        }
+      }
+    ]
+  }
+  ```
+- **Error (400):** `limit` no es un entero válido.
+- **Error (422):** `limit` vacío, menor a 1 o mayor a 15.
+
+---
+
+### `GET /community/latest-edit-samples`
+Lista las últimas 15 versiones editadas compartidas (ordenadas por fecha de publicación, descendente). Respuesta cacheada en memoria (TTL 3000s).
+
+- **Auth:** Header `Authorization: Bearer <accessToken>` (AccessToken)
+- **Query Params:**
+  - `limit` (int, requerido, min 1, max 15 — debe ser un entero válido)
+- **Response (200):** `PaginatedResponse<SharedSampleVersionItemDTO>`
+  ```json
+  {
+    "total": "int",
+    "limit": "int",
+    "page": "int",
+    "data": [
+      {
+        "id": "uuid",
+        "likes": "int",
+        "downloads": "int",
+        "createdAt": "string",
+        "sampleVersion": {
+          "id": "uuid",
+          "effects": { ... },
+          "finalAudioUrl": "string",
+          "sampleName": "string",
+          "prompt": "string"
+        },
+        "sharedBy": {
+          "userId": "uuid",
+          "name": "string",
+          "email": "string"
+        }
+      }
+    ]
+  }
+  ```
+- **Error (400):** `limit` no es un entero válido.
+- **Error (422):** `limit` vacío, menor a 1 o mayor a 15.
+
+---
+
 ### `PATCH /community/like/{sampleID}`
 Da like a un sample compartido.
 

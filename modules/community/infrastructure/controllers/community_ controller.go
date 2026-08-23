@@ -2,7 +2,9 @@ package communitycontrollers
 
 import (
 	"net/http"
+	"strconv"
 
+	communityrequestsdtos "github.com/PurpleSavage/monekai-server/modules/community/application/dtos/requests"
 	communityresponsesdtos "github.com/PurpleSavage/monekai-server/modules/community/application/dtos/responses"
 	communityusecases "github.com/PurpleSavage/monekai-server/modules/community/application/usecases"
 	communityinfrastructuremappers "github.com/PurpleSavage/monekai-server/modules/community/infrastructure/mappers"
@@ -10,19 +12,23 @@ import (
 	authmiddlewares "github.com/PurpleSavage/monekai-server/modules/shared/auth/infrastructure/middlewares"
 	commonresponsesdtos "github.com/PurpleSavage/monekai-server/modules/shared/common/application/dtos/responses"
 	commonvalueobjects "github.com/PurpleSavage/monekai-server/modules/shared/common/domain/valueobjects"
+	globalerrors "github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/errors"
 	commoninfrastructuremappers "github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/mappers"
 	"github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/validators"
 	"github.com/go-chi/chi/v5"
 )
 
 type CommunityController struct {
-	validator *validators.DTOValidator
-	authmiddleware *authmiddlewares.AuthMiddleware
-	listSharedSamples *communityusecases.ListSharedSamplesUC
-	listSharedSamplesVersion *communityusecases.ListSharedSamplesVersionUC
-	likeToSharedSample *communityusecases.LikeToSharedSampleUC
-	downloadToSharedSample *communityusecases.DownloadToSharedSampleUC
+	validator                    *validators.DTOValidator
+	authmiddleware               *authmiddlewares.AuthMiddleware
+	listSharedSamples            *communityusecases.ListSharedSamplesUC
+	listSharedSamplesVersion     *communityusecases.ListSharedSamplesVersionUC
+	likeToSharedSample           *communityusecases.LikeToSharedSampleUC
+	downloadToSharedSample       *communityusecases.DownloadToSharedSampleUC
+	getLatestSharedSamples       *communityusecases.GetLatestSharedSamplesUC
+	getLatestSharedEffectSamples *communityusecases.GetLatestSharedEffectSamplesUC
 }
+
 func NewCommunityController(
 	v *validators.DTOValidator,
 	am *authmiddlewares.AuthMiddleware,
@@ -30,26 +36,30 @@ func NewCommunityController(
 	listSharedSamplesVersion *communityusecases.ListSharedSamplesVersionUC,
 	likeToSharedSample *communityusecases.LikeToSharedSampleUC,
 	downloadToSharedSample *communityusecases.DownloadToSharedSampleUC,
+	getLatestSharedSamples *communityusecases.GetLatestSharedSamplesUC,
+	getLatestSharedEffectSamples *communityusecases.GetLatestSharedEffectSamplesUC,
 ) *CommunityController {
 	return &CommunityController{
-		validator: v,
-		authmiddleware: am,
-		listSharedSamples: listSharedSamples,
-		listSharedSamplesVersion: listSharedSamplesVersion,
-		likeToSharedSample: likeToSharedSample,
-		downloadToSharedSample: downloadToSharedSample,
+		validator:                    v,
+		authmiddleware:               am,
+		listSharedSamples:            listSharedSamples,
+		listSharedSamplesVersion:     listSharedSamplesVersion,
+		likeToSharedSample:           likeToSharedSample,
+		downloadToSharedSample:       downloadToSharedSample,
+		getLatestSharedSamples:       getLatestSharedSamples,
+		getLatestSharedEffectSamples: getLatestSharedEffectSamples,
 	}
 }
 
 func (nc *CommunityController) ListSharedSamples(w http.ResponseWriter, r *http.Request) {
-	page:= r.URL.Query().Get("page")
-	limit:= r.URL.Query().Get("limit")
+	page := r.URL.Query().Get("page")
+	limit := r.URL.Query().Get("limit")
 	paginationVO, err := commonvalueobjects.CreatePaginationVO(page, limit)
 	if err != nil {
-		commoninfrastructuremappers.RespondWithError(w,err)
+		commoninfrastructuremappers.RespondWithError(w, err)
 		return
 	}
-	response,error:= nc.listSharedSamples.Execute(r.Context(), paginationVO.Page, paginationVO.Limit)
+	response, error := nc.listSharedSamples.Execute(r.Context(), paginationVO.Page, paginationVO.Limit)
 	if error != nil {
 		commoninfrastructuremappers.RespondWithError(w, error)
 		return
@@ -64,14 +74,14 @@ func (nc *CommunityController) ListSharedSamples(w http.ResponseWriter, r *http.
 }
 
 func (nc *CommunityController) ListSharedEditSamples(w http.ResponseWriter, r *http.Request) {
-	page:= r.URL.Query().Get("page")
-	limit:= r.URL.Query().Get("limit")
+	page := r.URL.Query().Get("page")
+	limit := r.URL.Query().Get("limit")
 	paginationVO, err := commonvalueobjects.CreatePaginationVO(page, limit)
 	if err != nil {
-		commoninfrastructuremappers.RespondWithError(w,err)
+		commoninfrastructuremappers.RespondWithError(w, err)
 		return
 	}
-	response,error:= nc.listSharedSamplesVersion.Execute(r.Context(), paginationVO.Page, paginationVO.Limit)
+	response, error := nc.listSharedSamplesVersion.Execute(r.Context(), paginationVO.Page, paginationVO.Limit)
 	if error != nil {
 		commoninfrastructuremappers.RespondWithError(w, error)
 		return
@@ -87,42 +97,110 @@ func (nc *CommunityController) ListSharedEditSamples(w http.ResponseWriter, r *h
 
 func (nc *CommunityController) LikeToSharedSample(w http.ResponseWriter, r *http.Request) {
 	sampleID := chi.URLParam(r, "sampleID")
-	sampleIDParsed,err:= authvalueobjects.NewUUIDVO(sampleID)
+	sampleIDParsed, err := authvalueobjects.NewUUIDVO(sampleID)
 	if err != nil {
-		commoninfrastructuremappers.RespondWithError(w,err)
+		commoninfrastructuremappers.RespondWithError(w, err)
 		return
 	}
-	response, err:= nc.likeToSharedSample.Execute(r.Context(), sampleIDParsed.Value())
+	response, err := nc.likeToSharedSample.Execute(r.Context(), sampleIDParsed.Value())
 	if err != nil {
-		commoninfrastructuremappers.RespondWithError(w,err)
+		commoninfrastructuremappers.RespondWithError(w, err)
 		return
 	}
-	dtoResponse:=communityinfrastructuremappers.ResponseLikeSharedSampleDTOMapper(response)
+	dtoResponse := communityinfrastructuremappers.ResponseLikeSharedSampleDTOMapper(response)
 	commoninfrastructuremappers.RespondWithJSON(w, http.StatusOK, dtoResponse)
 }
 
 func (nc *CommunityController) DownloadSample(w http.ResponseWriter, r *http.Request) {
 	sampleID := chi.URLParam(r, "sampleID")
-	sampleIDParsed,err:= authvalueobjects.NewUUIDVO(sampleID)
+	sampleIDParsed, err := authvalueobjects.NewUUIDVO(sampleID)
 	if err != nil {
-		commoninfrastructuremappers.RespondWithError(w,err)
+		commoninfrastructuremappers.RespondWithError(w, err)
 		return
 	}
-	response, err:= nc.downloadToSharedSample.Execute(r.Context(), sampleIDParsed.Value())
+	response, err := nc.downloadToSharedSample.Execute(r.Context(), sampleIDParsed.Value())
 	if err != nil {
-		commoninfrastructuremappers.RespondWithError(w,err)
+		commoninfrastructuremappers.RespondWithError(w, err)
 		return
 	}
-	dto:=communityinfrastructuremappers.ToSampleDownloadResponseDTO(response)
+	dto := communityinfrastructuremappers.ToSampleDownloadResponseDTO(response)
 	commoninfrastructuremappers.RespondWithJSON(w, http.StatusOK, dto)
 }
 
-func CommunityMapRoutes(nc *CommunityController) chi.Router{ 
+func (nc *CommunityController) GetLatestSharedSamples(w http.ResponseWriter, r *http.Request) {
+	limitNumber, err := strconv.Atoi(r.URL.Query().Get("limit"))
+	if err != nil {
+		commoninfrastructuremappers.RespondWithError(
+			w,
+			globalerrors.NewAppError(
+				http.StatusBadRequest,
+				"Bad Request",
+				"The 'limit' query parameter must be a valid positive integer",
+				err,
+			),
+		)
+		return
+	}
+	queryDto := communityrequestsdtos.LatestSharedSamplesQueryDTO{Limit: limitNumber}
+	if err := nc.validator.ValidateStruct(queryDto); err != nil {
+		commoninfrastructuremappers.RespondWithError(w, err)
+		return
+	}
+	response, err := nc.getLatestSharedSamples.Execute(r.Context(), queryDto.Limit)
+	if err != nil {
+		commoninfrastructuremappers.RespondWithError(w, err)
+		return
+	}
+	responseDTO := commonresponsesdtos.PaginatedResponse[communityresponsesdtos.SharedSampleItemDTO]{
+		Total: response.Total,
+		Limit: response.Limit,
+		Page:  response.Page,
+		Data:  communityinfrastructuremappers.BuildListSharedSamplesResponseDTO(response.Data),
+	}
+	commoninfrastructuremappers.RespondWithJSON(w, http.StatusOK, responseDTO)
+}
+
+func (nc *CommunityController) GetLatestSharedEffectSamples(w http.ResponseWriter, r *http.Request) {
+	limitNumber, err := strconv.Atoi(r.URL.Query().Get("limit"))
+	if err != nil {
+		commoninfrastructuremappers.RespondWithError(
+			w,
+			globalerrors.NewAppError(
+				http.StatusBadRequest,
+				"Bad Request",
+				"The 'limit' query parameter must be a valid positive integer",
+				err,
+			),
+		)
+		return
+	}
+	queryDto := communityrequestsdtos.LatestSharedSamplesQueryDTO{Limit: limitNumber}
+	if err := nc.validator.ValidateStruct(queryDto); err != nil {
+		commoninfrastructuremappers.RespondWithError(w, err)
+		return
+	}
+	response, err := nc.getLatestSharedEffectSamples.Execute(r.Context(), queryDto.Limit)
+	if err != nil {
+		commoninfrastructuremappers.RespondWithError(w, err)
+		return
+	}
+	responseDTO := commonresponsesdtos.PaginatedResponse[communityresponsesdtos.SharedSampleVersionItemDTO]{
+		Total: response.Total,
+		Limit: response.Limit,
+		Page:  response.Page,
+		Data:  communityinfrastructuremappers.BuildListSharedSampleVersionsResponse(response.Data),
+	}
+	commoninfrastructuremappers.RespondWithJSON(w, http.StatusOK, responseDTO)
+}
+
+func CommunityMapRoutes(nc *CommunityController) chi.Router {
 	r := chi.NewRouter()
 	r.Use(nc.authmiddleware.AccessToken)
 	r.Get("/samples", nc.ListSharedSamples)
 	r.Get("/edit-samples", nc.ListSharedEditSamples)
-	r.Patch("/like/{sampleID}",nc.LikeToSharedSample)
+	r.Get("/latest-samples", nc.GetLatestSharedSamples)
+	r.Get("/latest-edit-samples", nc.GetLatestSharedEffectSamples)
+	r.Patch("/like/{sampleID}", nc.LikeToSharedSample)
 	r.Get("/download/{sampleID}", nc.DownloadSample)
 	return r
 }
