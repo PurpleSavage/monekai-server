@@ -127,6 +127,8 @@ type SharedSample struct {
 
 	User User `gorm:"foreignKey:UserID"`
 
+	PortraitPath *string `gorm:"type:text"`
+
 	Likes int `gorm:"default:0"`
 
 	Downloads int `gorm:"default:0"`
