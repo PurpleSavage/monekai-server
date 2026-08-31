@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"time"
 	commonports "github.com/PurpleSavage/monekai-server/modules/shared/common/application/ports"
 	"github.com/PurpleSavage/monekai-server/modules/shared/common/config"
 	globalerrors "github.com/PurpleSavage/monekai-server/modules/shared/common/infrastructure/errors"
@@ -15,7 +16,8 @@ import (
 )
 
 type CloudFlareAdapterService struct {
-	client *s3.Client
+	client    *s3.Client
+	presigner *s3.PresignClient
 }
 
 func NewCloudFlareAdapterService() commonports.StoragePort {
@@ -57,8 +59,11 @@ func NewCloudFlareAdapterService() commonports.StoragePort {
 		)
 	})
 
+	presigner := s3.NewPresignClient(client)
+
 	return &CloudFlareAdapterService{
-		client: client,
+		client:    client,
+		presigner: presigner,
 	}
 }
 
@@ -97,4 +102,25 @@ func (c *CloudFlareAdapterService) UploadFile(
 	)
 
 	return publicURL, nil
+}
+
+func (c *CloudFlareAdapterService) GeneratePResignedURL(
+	ctx context.Context,
+	key string,
+	contentType string,
+) (string, error) {
+	result, err := c.presigner.PresignPutObject(ctx, &s3.PutObjectInput{
+		Bucket:      aws.String(config.Envs.R2BucketName),
+		Key:         aws.String(key),
+		ContentType: aws.String(contentType),
+	}, func(opts *s3.PresignOptions) {
+		opts.Expires = 15 * time.Minute
+	})
+
+	if err != nil {
+		log.Printf("R2 PRESIGN ERROR: %+v", err)
+		return "", globalerrors.NewAppError(500, "R2 Presign Error", "Could not generate presigned URL", err)
+	}
+
+	return result.URL, nil
 }

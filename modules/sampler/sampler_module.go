@@ -41,8 +41,8 @@ func SamplerBootstrap(
 	updateURLEditedSampleUC := samplerusecases.NewUpdateURLEditedSampleUC(samplerEditedRepo)
 	updateEffectsEditedSampleUC := samplerusecases.NewUpdateEffectsEditedSampleUC(samplerEditedRepo)
 	listEditedSamplesUC := samplerusecases.NewListEditedSamplesUC(samplerEditedRepo)
+	presignedURLUC := samplerusecases.NewGeneratePresignedURLUC(storageService)
 
-	// middlewaress
 	// middlewares
 	replicateMiddleware := samplermiddlewares.NewReplicateMiddlewareWebhook()
 	creditsMiddleware := commonmiddlewares.NewCheckCreditsMiddleware(checkerCreditsService)
@@ -68,7 +68,16 @@ func SamplerBootstrap(
 		updateEffectsEditedSampleUC,
 		listEditedSamplesUC,
 	)
+	portraitController := samplercontroller.NewSharedSamplesPortraitController(
+		authmiddleware,
+		v,
+		presignedURLUC,
+	)
+	
+
+	
 	router := samplercontroller.SamplerMapRoutes(controller)
 	router.Mount("/", samplercontroller.SamplerEditedMapRoutes(editedController))
+	router.Mount("/",samplercontroller.SharedSamplesPortraitsMapRoutes(portraitController))
 	return router
 }
