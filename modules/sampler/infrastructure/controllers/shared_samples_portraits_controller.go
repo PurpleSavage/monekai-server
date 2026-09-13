@@ -68,9 +68,9 @@ func (sp *SharedSamplesPortraitsController) PresignedURL(w http.ResponseWriter, 
 	commoninfrastructuremappers.RespondWithJSON(w, http.StatusOK, response)
 }
 
-func SharedSamplesPortraitsMapRoutes(sp *SharedSamplesPortraitsController) chi.Router {
-	r := chi.NewRouter()
-	r.Use(sp.authMiddleware.AccessToken)
-	r.Get("/presigned-url", sp.PresignedURL)
-	return r
+func SharedSamplesPortraitsMapRoutes(sp *SharedSamplesPortraitsController, r chi.Router) {
+	r.Group(func(r chi.Router) {
+		r.Use(sp.authMiddleware.AccessToken)
+		r.Get("/presigned-url", sp.PresignedURL)
+	})
 }

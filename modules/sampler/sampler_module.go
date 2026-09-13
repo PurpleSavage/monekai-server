@@ -78,6 +78,6 @@ func SamplerBootstrap(
 	
 	router := samplercontroller.SamplerMapRoutes(controller)
 	router.Mount("/", samplercontroller.SamplerEditedMapRoutes(editedController))
-	router.Mount("/",samplercontroller.SharedSamplesPortraitsMapRoutes(portraitController))
+	samplercontroller.SharedSamplesPortraitsMapRoutes(portraitController, router)
 	return router
 }
