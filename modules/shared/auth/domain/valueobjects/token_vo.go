@@ -1,4 +1,4 @@
-package authvalueobjects
+ package authvalueobjects
 
 import (
 	"strings"

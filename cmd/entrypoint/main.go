@@ -6,6 +6,7 @@ import (
 
 	"github.com/PurpleSavage/monekai-server/cmd/scripts"
 	connection "github.com/PurpleSavage/monekai-server/configurations/persistenceconnections"
+	"github.com/PurpleSavage/monekai-server/modules/account"
 	"github.com/PurpleSavage/monekai-server/modules/community"
 	"github.com/PurpleSavage/monekai-server/modules/notifications"
 	notificationsevents "github.com/PurpleSavage/monekai-server/modules/notifications/infrastructure/serverevents"
@@ -127,6 +128,13 @@ func main() {
 			db,
 			bucketObserver,
 			dtoValidator,
+			authmiddleware,
+		),
+	)
+	r.Mount(
+		"/account",
+		account.AccountBootstrap(
+			db,
 			authmiddleware,
 		),
 	)
